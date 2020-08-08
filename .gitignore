@@ -1,0 +1,4 @@
+build/*t
+
+# Completion tool caches
+.ccls-cache

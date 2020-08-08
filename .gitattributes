@@ -1,0 +1,12 @@
+# Commit Unix line endings, checkout based on platform
+* text=auto
+
+# Specifically set these types as text
+*.c text
+*.cpp text
+*.h text
+*.hpp text
+*.md text
+*.py text
+*.txt text
+

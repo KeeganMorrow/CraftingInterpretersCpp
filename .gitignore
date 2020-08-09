@@ -1,4 +1,6 @@
-build/*t
+build/*
+build_*/
 
 # Completion tool caches
 .ccls-cache
+.clangd

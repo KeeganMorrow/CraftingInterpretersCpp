@@ -36,10 +36,10 @@ int Interpreter::runPrompt()
 
 int Interpreter::runFile(const std::string& filepath)
 {
-    int status { 0 };
+    int status {0};
     spdlog::info("Opening file {}", filepath);
 
-    std::filesystem::path path { filepath };
+    std::filesystem::path path {filepath};
     std::ifstream file;
     try {
         std::ostringstream buf;

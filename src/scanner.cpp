@@ -18,7 +18,7 @@ std::vector<Token> Scanner::scanTokens()
     };
 
     m_tokens.emplace_back(
-        Token { TokenType::END_OF_FILE, "", NoneLiteralVal {}, m_line });
+        Token {TokenType::END_OF_FILE, "", NoneLiteralVal {}, m_line});
     return m_tokens;
 }
 
@@ -28,79 +28,79 @@ void Scanner::scanToken()
 {
     char c = advance();
     switch (c) {
-    case '(':
-        addToken(TokenType::LEFT_PAREN);
-        break;
-    case ')':
-        addToken(TokenType::RIGHT_PAREN);
-        break;
-    case '{':
-        addToken(TokenType::LEFT_BRACE);
-        break;
-    case '}':
-        addToken(TokenType::RIGHT_BRACE);
-        break;
-    case ',':
-        addToken(TokenType::COMMA);
-        break;
-    case '.':
-        addToken(TokenType::DOT);
-        break;
-    case '-':
-        addToken(TokenType::MINUS);
-        break;
-    case '+':
-        addToken(TokenType::PLUS);
-        break;
-    case ';':
-        addToken(TokenType::SEMICOLON);
-        break;
-    case '*':
-        addToken(TokenType::STAR);
-        break;
-    case '!':
-        addToken(match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
-        break;
-    case '=':
-        addToken(match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);
-        break;
-    case '<':
-        addToken(match('=') ? TokenType::LESS_EQUAL : TokenType::LESS);
-        break;
-    case '>':
-        addToken(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
-        break;
-    case '/':
-        if (match('/')) {
-            // A comment goes until the end of the line.
-            while (peek() != '\n' && !isAtEnd()) {
-                advance();
+        case '(':
+            addToken(TokenType::LEFT_PAREN);
+            break;
+        case ')':
+            addToken(TokenType::RIGHT_PAREN);
+            break;
+        case '{':
+            addToken(TokenType::LEFT_BRACE);
+            break;
+        case '}':
+            addToken(TokenType::RIGHT_BRACE);
+            break;
+        case ',':
+            addToken(TokenType::COMMA);
+            break;
+        case '.':
+            addToken(TokenType::DOT);
+            break;
+        case '-':
+            addToken(TokenType::MINUS);
+            break;
+        case '+':
+            addToken(TokenType::PLUS);
+            break;
+        case ';':
+            addToken(TokenType::SEMICOLON);
+            break;
+        case '*':
+            addToken(TokenType::STAR);
+            break;
+        case '!':
+            addToken(match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
+            break;
+        case '=':
+            addToken(match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);
+            break;
+        case '<':
+            addToken(match('=') ? TokenType::LESS_EQUAL : TokenType::LESS);
+            break;
+        case '>':
+            addToken(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
+            break;
+        case '/':
+            if (match('/')) {
+                // A comment goes until the end of the line.
+                while (peek() != '\n' && !isAtEnd()) {
+                    advance();
+                }
+            } else {
+                addToken(TokenType::SLASH);
             }
-        } else {
-            addToken(TokenType::SLASH);
-        }
-        break;
-    case '"':
-        string();
-        break;
-    case ' ':
-    case '\r':
-    case '\t':
-        // Ignore whitespace.
-        break;
+            break;
+        case '"':
+            string();
+            break;
+        case ' ':
+        case '\r':
+        case '\t':
+            // Ignore whitespace.
+            break;
 
-    case '\n':
-        m_line++;
-        break;
-    default:
-        if (std::isdigit(c)) {
-            number();
-        } else if (std::isalpha(c)) {
-            identifier();
-        } else {
-            Interpreter::error(m_line, "Unexpected character");
-        }
-        break;
+        case '\n':
+            m_line++;
+            break;
+        default:
+            if (std::isdigit(c)) {
+                number();
+            } else if (std::isalpha(c)) {
+                identifier();
+            } else {
+                Interpreter::error(m_line, "Unexpected character");
+            }
+            break;
     }
 }
 
@@ -118,7 +118,7 @@ void Scanner::addToken(TokenType type, const std::string& literal)
     spdlog::info("Adding a token with lexeme {} literal {} start {} current {}",
         text, literal, m_start, m_current);
     m_tokens.emplace_back(
-        Token { type, std::move(text), StringLiteralVal { literal }, m_line });
+        Token {type, std::move(text), StringLiteralVal {literal}, m_line});
 }
 
 void Scanner::addToken(TokenType type, bool literal)
@@ -127,7 +127,7 @@ void Scanner::addToken(TokenType type, bool literal)
     spdlog::info("Adding a token with lexeme {} literal {} start {} current {}",
         text, literal, m_start, m_current);
     m_tokens.emplace_back(
-        Token { type, std::move(text), BoolLiteralVal { literal }, m_line });
+        Token {type, std::move(text), BoolLiteralVal {literal}, m_line});
 }
 
 void Scanner::addToken(TokenType type, double literal)
@@ -136,7 +136,7 @@ void Scanner::addToken(TokenType type, double literal)
     spdlog::info("Adding a token with lexeme {} literal {} start {} current {}",
         text, literal, m_start, m_current);
     m_tokens.emplace_back(
-        Token { type, std::move(text), NumberLiteralVal { literal }, m_line });
+        Token {type, std::move(text), NumberLiteralVal {literal}, m_line});
 }
 
 bool Scanner::match(char expected)
@@ -229,14 +229,13 @@ void Scanner::identifier()
 }
 
 const std::map<std::string, TokenType> Scanner::Keywords = {
-    { "and", TokenType::AND }, { "class", TokenType::CLASS },
-    { "else", TokenType::ELSE }, { "false", TokenType::FALSE },
-    { "for", TokenType::FOR }, { "fun", TokenType::FUN },
-    { "if", TokenType::IF }, { "nil", TokenType::NIL },
-    { "or", TokenType::OR }, { "print", TokenType::PRINT },
-    { "return", TokenType::RETURN }, { "super", TokenType::SUPER },
-    { "this", TokenType::THIS }, { "true", TokenType::TRUE },
-    { "var", TokenType::VAR }, { "while", TokenType::WHILE }
-};
+    {"and", TokenType::AND}, {"class", TokenType::CLASS},
+    {"else", TokenType::ELSE}, {"false", TokenType::FALSE},
+    {"for", TokenType::FOR}, {"fun", TokenType::FUN},
+    {"if", TokenType::IF}, {"nil", TokenType::NIL},
+    {"or", TokenType::OR}, {"print", TokenType::PRINT},
+    {"return", TokenType::RETURN}, {"super", TokenType::SUPER},
+    {"this", TokenType::THIS}, {"true", TokenType::TRUE},
+    {"var", TokenType::VAR}, {"while", TokenType::WHILE}};
 
 } // namespace KeegMake

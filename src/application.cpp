@@ -8,7 +8,7 @@ namespace KeegMake {
 
 int Application::run()
 {
-    int status { 0 };
+    int status {0};
 
     if (m_args.size() == 1) {
         status = m_interpreter.runPrompt();

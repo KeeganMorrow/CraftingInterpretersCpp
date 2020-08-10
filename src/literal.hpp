@@ -2,14 +2,16 @@
 #include "exception.hpp"
 
 namespace KeegMake {
-enum class LiteralValType { String,
+enum class LiteralValType {
+    String,
     Bool,
     Number,
-    None };
+    None
+};
 
-const std::string LiteralValTypeStr_String { "String" };
-const std::string LiteralValTypeStr_Bool { "Bool" };
-const std::string LiteralValTypeStr_Number { "Bool" };
+const std::string LiteralValTypeStr_String {"String"};
+const std::string LiteralValTypeStr_Bool {"Bool"};
+const std::string LiteralValTypeStr_Number {"Bool"};
 
 const std::string& LiteralValTypeToStr(LiteralValType type);
 

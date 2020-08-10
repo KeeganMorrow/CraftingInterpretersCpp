@@ -20,6 +20,6 @@ public:
     Interpreter& operator=(const Interpreter&) = delete;
 
 private:
-    bool m_hadError { false };
+    bool m_hadError {false};
 };
 } // namespace KeegMake

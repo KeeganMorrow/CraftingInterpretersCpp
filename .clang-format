@@ -1,2 +1,12 @@
-BasedOnStyle: Webkit
-IndentWidth: 4
+---
+BasedOnStyle: WebKit
+AllowShortBlocksOnASingleLine: 'false'
+AllowShortCaseLabelsOnASingleLine: 'false'
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+BreakBeforeBraces: WebKit
+PenaltyReturnTypeOnItsOwnLine: '0'
+Cpp11BracedListStyle: 'true'
+IndentCaseLabels: 'true'
+
+...

@@ -1,8 +1,8 @@
 #pragma once
 #include "token.hpp"
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 namespace KeegMake {
 
 class Token;
@@ -40,7 +40,6 @@ private:
     int m_line { 1 };
 
     static const std::map<std::string, TokenType> Keywords;
-
 };
 
-} //namespace KeegMake
+} // namespace KeegMake

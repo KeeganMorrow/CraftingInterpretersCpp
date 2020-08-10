@@ -7,7 +7,10 @@ namespace KeegMake {
 
 class Application {
 public:
-    Application(const std::vector<std::string> &&args):m_args(args){}
+    Application(const std::vector<std::string>&& args)
+        : m_args(args)
+    {
+    }
     int run();
 
     // Delete undesired constructors (Allow move, not copy or assign)
@@ -18,4 +21,4 @@ private:
     const std::vector<std::string> m_args;
     Interpreter m_interpreter;
 };
-} //namespace KeegMake
+} // namespace KeegMake

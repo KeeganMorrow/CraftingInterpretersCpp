@@ -12,7 +12,8 @@ public:
     int runPrompt();
 
     static void error(int line, const std::string& message);
-    static void report(int line, const std::string& where, const std::string& message);
+    static void report(int line, const std::string& where,
+        const std::string& message);
 
     // Delete undesired constructors (Allow move, not copy or assign)
     Interpreter(const Interpreter&) = delete;
@@ -21,4 +22,4 @@ public:
 private:
     bool m_hadError { false };
 };
-} //namespace KeegMake
+} // namespace KeegMake

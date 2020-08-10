@@ -17,14 +17,12 @@ std::vector<Token> Scanner::scanTokens()
         scanToken();
     };
 
-    m_tokens.emplace_back(Token { TokenType::END_OF_FILE, "", m_line });
+    m_tokens.emplace_back(
+        Token { TokenType::END_OF_FILE, "", NoneLiteralVal {}, m_line });
     return m_tokens;
 }
 
-bool Scanner::isAtEnd()
-{
-    return m_current >= m_source.length();
-}
+bool Scanner::isAtEnd() { return m_current >= m_source.length(); }
 
 void Scanner::scanToken()
 {
@@ -75,13 +73,10 @@ void Scanner::scanToken()
     case '/':
         if (match('/')) {
             // A comment goes until the end of the line.
-            while (peek() != '\n' && !isAtEnd())
-            {
+            while (peek() != '\n' && !isAtEnd()) {
                 advance();
             }
-        }
-        else
-        {
+        } else {
             addToken(TokenType::SLASH);
         }
         break;
@@ -100,12 +95,9 @@ void Scanner::scanToken()
     default:
         if (std::isdigit(c)) {
             number();
-        }
-        else if (std::isalpha(c)) {
+        } else if (std::isalpha(c)) {
             identifier();
-        }
-        else
-        {
+        } else {
             Interpreter::error(m_line, "Unexpected character");
         }
         break;
@@ -118,40 +110,41 @@ char Scanner::advance()
     return m_source.at(m_current - 1);
 }
 
-void Scanner::addToken(TokenType type)
-{
-    addToken(type, "");
-}
+void Scanner::addToken(TokenType type) { addToken(type, ""); }
 
 void Scanner::addToken(TokenType type, const std::string& literal)
 {
-    auto text = m_source.substr(m_start, m_current-m_start);
-    spdlog::info("Adding a token with lexeme {} literal {} start {} current {}", text, literal, m_start, m_current);
-    m_tokens.emplace_back(StringToken{std::move(literal), std::move(text), m_line});
+    auto text = m_source.substr(m_start, m_current - m_start);
+    spdlog::info("Adding a token with lexeme {} literal {} start {} current {}",
+        text, literal, m_start, m_current);
+    m_tokens.emplace_back(
+        Token { type, std::move(text), StringLiteralVal { literal }, m_line });
 }
 
 void Scanner::addToken(TokenType type, bool literal)
 {
-    auto text = m_source.substr(m_start, m_current-m_start);
-    spdlog::info("Adding a token with lexeme {} literal {} start {} current {}", text, literal, m_start, m_current);
-    m_tokens.emplace_back(BoolToken{std::move(literal), std::move(text), m_line});
+    auto text = m_source.substr(m_start, m_current - m_start);
+    spdlog::info("Adding a token with lexeme {} literal {} start {} current {}",
+        text, literal, m_start, m_current);
+    m_tokens.emplace_back(
+        Token { type, std::move(text), BoolLiteralVal { literal }, m_line });
 }
 
 void Scanner::addToken(TokenType type, double literal)
 {
-    auto text = m_source.substr(m_start, m_current-m_start);
-    spdlog::info("Adding a token with lexeme {} literal {} start {} current {}", text, literal, m_start, m_current);
-    m_tokens.emplace_back(NumberToken{std::move(literal), std::move(text), m_line});
+    auto text = m_source.substr(m_start, m_current - m_start);
+    spdlog::info("Adding a token with lexeme {} literal {} start {} current {}",
+        text, literal, m_start, m_current);
+    m_tokens.emplace_back(
+        Token { type, std::move(text), NumberLiteralVal { literal }, m_line });
 }
 
 bool Scanner::match(char expected)
 {
-    if (isAtEnd())
-    {
+    if (isAtEnd()) {
         return false;
     }
-    if (m_source.at(m_current) != expected)
-    {
+    if (m_source.at(m_current) != expected) {
         return false;
     }
 
@@ -160,29 +153,24 @@ bool Scanner::match(char expected)
 }
 char Scanner::peek()
 {
-    if (isAtEnd())
-    {
+    if (isAtEnd()) {
         return '\0';
     }
     return m_source.at(m_current);
-
 }
 
 char Scanner::peekNext()
 {
-    if (m_current + 1 >= m_source.length())
-    {
+    if (m_current + 1 >= m_source.length()) {
         return '\0';
     }
     return m_source.at(m_current + 1);
-
 }
 
-void Scanner::string() {
-    while (peek() != '"' && !isAtEnd())
-    {
-        if(peek() == '\n')
-        {
+void Scanner::string()
+{
+    while (peek() != '"' && !isAtEnd()) {
+        if (peek() == '\n') {
             m_line++;
         }
         advance();
@@ -197,24 +185,22 @@ void Scanner::string() {
     advance();
 
     // Trim those quotes
-    std::string value = m_source.substr(m_start + 1, m_current-m_start-1);
+    std::string value = m_source.substr(m_start + 1, m_current - m_start - 1);
     addToken(TokenType::STRING, value);
 }
 
-void Scanner::number() {
-    while(std::isdigit(peek()))
-    {
+void Scanner::number()
+{
+    while (std::isdigit(peek())) {
         advance();
     }
 
     // Look for a fractional part
-    if (peek() == '.' && std::isdigit(peekNext()))
-    {
+    if (peek() == '.' && std::isdigit(peekNext())) {
         // Consume the "."
         advance();
 
-        while(std::isdigit(peek()))
-        {
+        while (std::isdigit(peek())) {
             advance();
         }
     }
@@ -224,46 +210,33 @@ void Scanner::number() {
     addToken(TokenType::NUMBER, val);
 }
 
-void Scanner::identifier() {
-    while(std::isalnum(peek()))
-    {
+void Scanner::identifier()
+{
+    while (std::isalnum(peek())) {
         advance();
     }
 
-    auto text = m_source.substr(m_start, m_current-m_start);
+    auto text = m_source.substr(m_start, m_current - m_start);
 
     TokenType type;
-    try
-    {
+    try {
         type = Keywords.at(text);
-    }
-    catch(std::out_of_range &e)
-    {
+    } catch (std::out_of_range& e) {
         type = TokenType::VAR;
     }
 
     addToken(type, text);
 }
 
-
-
 const std::map<std::string, TokenType> Scanner::Keywords = {
-    {"and", TokenType::AND},
-    {"class", TokenType::CLASS},
-    {"else", TokenType::ELSE},
-    {"false", TokenType::FALSE},
-    {"for", TokenType::FOR},
-    {"fun", TokenType::FUN},
-    {"if", TokenType::IF},
-    {"nil", TokenType::NIL},
-    {"or", TokenType::OR},
-    {"print", TokenType::PRINT},
-    {"return", TokenType::RETURN},
-    {"super", TokenType::SUPER},
-    {"this", TokenType::THIS},
-    {"true", TokenType::TRUE},
-    {"var", TokenType::VAR},
-    {"while", TokenType::WHILE}
+    { "and", TokenType::AND }, { "class", TokenType::CLASS },
+    { "else", TokenType::ELSE }, { "false", TokenType::FALSE },
+    { "for", TokenType::FOR }, { "fun", TokenType::FUN },
+    { "if", TokenType::IF }, { "nil", TokenType::NIL },
+    { "or", TokenType::OR }, { "print", TokenType::PRINT },
+    { "return", TokenType::RETURN }, { "super", TokenType::SUPER },
+    { "this", TokenType::THIS }, { "true", TokenType::TRUE },
+    { "var", TokenType::VAR }, { "while", TokenType::WHILE }
 };
 
-} //namespace KeegMake
+} // namespace KeegMake

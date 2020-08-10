@@ -1,7 +1,9 @@
 #pragma once
+#include "exception.hpp"
+#include "literal.hpp"
+#include <spdlog/fmt/fmt.h>
 #include <string>
 #include <type_traits>
-#include "exception.hpp"
 namespace KeegMake {
 
 enum class TokenType {
@@ -56,9 +58,11 @@ enum class TokenType {
 
 class Token {
 public:
-    Token(TokenType type, const std::string&& lexeme, int line)
+    Token(TokenType type, const std::string&& lexeme,
+        const LiteralVal&& literal, int line)
         : m_type(type)
         , m_lexeme(lexeme)
+        , m_literal(literal)
         , m_line(line)
     {
     }
@@ -66,55 +70,17 @@ public:
     [[nodiscard]] std::string lexeme() const { return m_lexeme; }
     [[nodiscard]] int line() const { return m_line; }
 
-    [[nodiscard]] virtual std::string literal_str() const { throw MissingLiteralException(line(), lexeme());}
-    [[nodiscard]] virtual bool literal_bool() const { throw MissingLiteralException(line(), lexeme());}
-    [[nodiscard]] virtual double literal_num() const { throw MissingLiteralException(line(), lexeme());}
+    [[nodiscard]] std::string repr() const
+    {
+        return fmt::format("TokenType: {}, lexeme: {}, literal: {}", m_type,
+            m_lexeme, m_literal.repr());
+    }
 
 private:
     TokenType m_type;
     const std::string m_lexeme;
     const int m_line;
+    const LiteralVal m_literal;
 };
 
-class NumberToken : public Token
-{
-    public:
-        NumberToken(double value, const std::string&& lexeme, int line)
-            : Token(TokenType::NUMBER, std::move(lexeme), line)
-            , m_literal(value)
-        {
-        }
-
-    double literal_num() const override {return m_literal;}
-
-    private:
-    const double m_literal;
-};
-
-class BoolToken : public Token
-{
-    public:
-        BoolToken(bool value, const std::string&& lexeme, int line)
-            : Token(TokenType::NUMBER, std::move(lexeme), line)
-            , m_literal(value)
-        {
-        }
-    [[nodiscard]] bool literal_bool() const override {return m_literal;}
-
-    private:
-    const bool m_literal;
-};
-class StringToken : public Token
-{
-    public:
-        StringToken(const std::string&& value, const std::string&& lexeme, int line)
-            : Token(TokenType::NUMBER, std::move(lexeme), line)
-            , m_literal(value)
-        {
-        }
-    [[nodiscard]] std::string literal_str() const override {return m_literal;}
-
-    private:
-    const std::string m_literal;
-};
-} //namespace KeegMake
+} // namespace KeegMake

@@ -13,8 +13,8 @@ int Interpreter::run(const std::string& source)
     Scanner scanner(std::move(source));
     auto tokens = scanner.scanTokens();
 
-    for (auto &token : tokens) {
-        spdlog::info("Found token {} {}", token.lexeme(), static_cast<int>(token.type()));
+    for (auto& token : tokens) {
+        spdlog::info("Found token {}", token.repr());
     }
     return 0;
 }
@@ -54,7 +54,8 @@ int Interpreter::runFile(const std::string& filepath)
             spdlog::error("Error opening file {}", filepath);
         }
     } catch (std::ifstream::failure& e) {
-        spdlog::error("Failed operating on file '{}'", e.what(), e.code().value());
+        spdlog::error("Failed operating on file '{}'", e.what(),
+            e.code().value());
     }
 
     return status;
@@ -65,9 +66,10 @@ void Interpreter::error(int line, const std::string& message)
     report(line, "", message);
 }
 
-void Interpreter::report(int line, const std::string& where, const std::string& message)
+void Interpreter::report(int line, const std::string& where,
+    const std::string& message)
 {
     spdlog::error("[line {}] Error {}: {}", line, where, message);
 }
 
-} //namespace KeegMake
+} // namespace KeegMake

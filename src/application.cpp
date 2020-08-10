@@ -21,4 +21,4 @@ int Application::run()
     return status;
 }
 
-} //namespace KeegMake
+} // namespace KeegMake

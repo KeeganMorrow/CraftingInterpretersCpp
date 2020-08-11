@@ -6,7 +6,7 @@ std::unique_ptr<Expression> Parser::parse()
 {
     try {
         return expression();
-    } catch (ParseError error) {
+    } catch (ParseError &error) {
         spdlog::error("Parse error encountered {}", error.what());
         return nullptr;
     }
@@ -30,6 +30,8 @@ void Parser::synchronize()
             case TokenType::PRINT:
             case TokenType::RETURN:
                 return;
+            default:
+                break;
         }
         advance();
     }

@@ -62,8 +62,8 @@ public:
         std::unique_ptr<const LiteralVal>&& literal, int line)
         : m_type(type)
         , m_lexeme(lexeme)
-        , m_literal(std::move(literal))
         , m_line(line)
+        , m_literal(std::move(literal))
     {
     }
     Token(const Token& other)

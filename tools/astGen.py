@@ -109,6 +109,9 @@ def defineType(f, basename, type, returntypes):
             lineending = ','
         writeline("    {}(std::move({})){}".format(field.member_name(), field.identifier, lineending))
 
+    # Virtual destructor
+    writeline("   virtual ~{}() = default;".format(type.name))
+
     for field in type.fields:
         writeline("   virtual const {type} &{identifier}() const{{ return *({member_name}.get()); }}".format(type=field.type, identifier=field.identifier, member_name=field.member_name()))
 
@@ -132,15 +135,18 @@ def defineAst(outputdir, filename, basename, types):
         writeline("#include <memory>")
         writeline("")
         writeline("namespace KeegMake {")
-
+        writeline("")
         for type in types:
             writeline("class {};".format(type.name))
 
+        writeline("")
         writeline("class {}{{".format(basename))
         writeline("public:")
 
         returntypes = [ReturnType("String","std::string")]
         defineVisitor(f, basename, returntypes, types)
+
+        writeline("    virtual ~{}() = default;".format(basename))
 
         writeline("")
         writeline("};")

@@ -11,7 +11,7 @@ class Scanner {
 public:
     Scanner(const std::string&& source);
 
-    std::vector<Token> scanTokens();
+    std::vector<Token> &scanTokens();
 
     // Delete undesired constructors (Allow move, not copy or assign)
     Scanner(const Scanner&) = delete;

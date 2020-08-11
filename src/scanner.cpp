@@ -10,7 +10,7 @@ Scanner::Scanner(const std::string&& source)
 {
 }
 
-std::vector<Token> Scanner::scanTokens()
+std::vector<Token> &Scanner::scanTokens()
 {
     while (!isAtEnd()) {
         m_start = m_current;
@@ -18,11 +18,11 @@ std::vector<Token> Scanner::scanTokens()
     };
 
     m_tokens.emplace_back(
-        Token {TokenType::END_OF_FILE, "", std::move(std::make_unique<NoneLiteralVal>()), m_line});
+        Token {TokenType::END_OF_FILE, std::string(""), std::make_unique<NoneLiteralVal>(), m_line});
     return m_tokens;
 }
 
-bool Scanner::isAtEnd() { return m_current >= m_source.length(); }
+bool Scanner::isAtEnd() { return m_current >= (int)m_source.length(); }
 
 void Scanner::scanToken()
 {
@@ -161,7 +161,7 @@ char Scanner::peek()
 
 char Scanner::peekNext()
 {
-    if (m_current + 1 >= m_source.length()) {
+    if (m_current + 1 >= (int)m_source.length()) {
         return '\0';
     }
     return m_source.at(m_current + 1);

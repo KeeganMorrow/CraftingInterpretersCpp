@@ -25,6 +25,7 @@ public:
     }
 
     LiteralVal(const LiteralVal& other) = delete;
+    virtual ~LiteralVal() = default;
 
     virtual std::unique_ptr<LiteralVal> clone() const = 0;
 
@@ -50,11 +51,12 @@ protected:
 class BoolLiteralVal : public LiteralVal {
 public:
     BoolLiteralVal(bool literal)
-        : m_literal(literal)
-        , LiteralVal(LiteralValType::Bool)
+        : LiteralVal(LiteralValType::Bool)
+        , m_literal(literal)
     {
     }
-    BoolLiteralVal(const BoolLiteralVal& other) = delete;
+
+    virtual ~BoolLiteralVal() = default;
 
     std::unique_ptr<LiteralVal> clone() const override
     {
@@ -73,12 +75,12 @@ private:
 class NumberLiteralVal : public LiteralVal {
 public:
     NumberLiteralVal(double literal)
-        : m_literal(literal)
-        , LiteralVal(LiteralValType::Number)
+        : LiteralVal(LiteralValType::Number)
+        , m_literal(literal)
     {
     }
 
-    NumberLiteralVal(const NumberLiteralVal& other) = delete;
+    virtual ~NumberLiteralVal() = default;
 
     std::unique_ptr<LiteralVal> clone() const override
     {
@@ -97,10 +99,12 @@ private:
 class StringLiteralVal : public LiteralVal {
 public:
     StringLiteralVal(const std::string& literal)
-        : m_literal(literal)
-        , LiteralVal(LiteralValType::String)
+        : LiteralVal(LiteralValType::String)
+        , m_literal(literal)
     {
     }
+
+    virtual ~StringLiteralVal() = default;
 
     std::unique_ptr<LiteralVal> clone() const override
     {
@@ -121,6 +125,8 @@ public:
         : LiteralVal(LiteralValType::None)
     {
     }
+
+    virtual ~NoneLiteralVal() = default;
 
     std::unique_ptr<LiteralVal> clone() const override
     {

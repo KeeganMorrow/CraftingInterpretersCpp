@@ -8,12 +8,13 @@ class Token;
 
 class BaseException : public std::exception {
 public:
-    BaseException(const std::string& error_msg)
-        : m_error_msg(error_msg)
+    BaseException(std::string error_msg)
+        : m_error_msg(std::move(error_msg))
     {
     }
 
-    const char* what() const throw() { return m_error_msg.c_str(); }
+    [[nodiscard]]const char* what() const noexcept override { return m_error_msg.c_str(); }
+private:
     const std::string m_error_msg;
 };
 

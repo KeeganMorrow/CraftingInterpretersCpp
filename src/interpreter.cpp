@@ -10,22 +10,32 @@
 
 namespace KeegMake {
 
+const int EXIT_RESULT_OK = 0;
+const int EXIT_RESULT_PARSE_ERROR = 1;
+
 int Interpreter::run(const std::string& source)
 {
-    Scanner scanner(std::move(source));
+    int result{EXIT_RESULT_OK};
+    Scanner scanner(source);
     auto tokens = scanner.scanTokens();
-    Parser parser(std::move(tokens));
-    auto expression = parser.parse();
-    if (expression)
-        spdlog::info("{}", AstPrinter().print(*expression));
-    else {
-        spdlog::warn("No valid expression after parsing, see previous output");
-    }
 
     for (auto& token : tokens) {
         spdlog::info("Found token {}", token.repr());
     }
-    return 0;
+
+    Parser parser(std::move(tokens));
+    auto expression = parser.parse();
+    if (expression)
+    {
+        spdlog::info("{}", AstPrinter().print(*expression));
+    }
+    else {
+        m_hadError = true;
+        spdlog::warn("No valid expression after parsing, see previous output");
+        result = EXIT_RESULT_PARSE_ERROR;
+    }
+
+    return result;
 }
 
 int Interpreter::runPrompt()
@@ -55,9 +65,9 @@ int Interpreter::runFile(const std::string& filepath)
         file.open(path);
         if (!file.fail()) {
             buf << file.rdbuf();
-            run(buf.str());
-            if (m_hadError) {
-                status = 5;
+            auto result =run(buf.str());
+            if (m_hadError || result) {
+                status = EXIT_RESULT_PARSE_ERROR;
             }
         } else {
             spdlog::error("Error opening file {}", filepath);

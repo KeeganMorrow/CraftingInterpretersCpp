@@ -36,9 +36,9 @@ private:
     std::unique_ptr<Token> peek();
     std::unique_ptr<Token> previous();
 
-    ParseError error(std::unique_ptr<Token> token, const std::string& message);
+    static ParseError error(std::unique_ptr<Token> token, const std::string& message);
 
-    std::unique_ptr<Token> consume(TokenType type, std::string message);
+    std::unique_ptr<Token> consume(TokenType type, const std::string &message);
 
     const std::vector<Token> m_tokens;
     int m_current = 0;

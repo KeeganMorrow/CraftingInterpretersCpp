@@ -9,7 +9,7 @@ class Token;
 
 class Scanner {
 public:
-    Scanner(const std::string&& source);
+    Scanner(const std::string& source);
 
     std::vector<Token> &scanTokens();
 
@@ -21,7 +21,7 @@ private:
     bool isAtEnd();
     void scanToken();
     char advance();
-    void addToken(TokenType type, const std::string& literal);
+    void addToken(TokenType type, std::string &literal);
     void addToken(TokenType type, bool literal);
     void addToken(TokenType type, double literal);
     void addToken(TokenType type);
@@ -33,7 +33,7 @@ private:
     void number();
     void identifier();
 
-    const std::string m_source {};
+    const std::string &m_source {};
     std::vector<Token> m_tokens {};
     int m_start {0};
     int m_current {0};

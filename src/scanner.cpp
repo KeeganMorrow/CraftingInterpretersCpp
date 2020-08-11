@@ -5,7 +5,7 @@
 
 namespace KeegMake {
 
-Scanner::Scanner(const std::string&& source)
+Scanner::Scanner(const std::string& source)
     : m_source(source)
 {
 }
@@ -110,9 +110,16 @@ char Scanner::advance()
     return m_source.at(m_current - 1);
 }
 
-void Scanner::addToken(TokenType type) { addToken(type, ""); }
+void Scanner::addToken(TokenType type) {
+    auto text = m_source.substr(m_start, m_current - m_start);
+    spdlog::info("Adding a token with lexeme {} literal N/A start {} current {}",
+        text, m_start, m_current);
+    m_tokens.emplace_back(
+        Token {type, std::move(text), m_line});
+}
 
-void Scanner::addToken(TokenType type, const std::string& literal)
+
+void Scanner::addToken(TokenType type, std::string &literal)
 {
     auto text = m_source.substr(m_start, m_current - m_start);
     spdlog::info("Adding a token with lexeme {} literal {} start {} current {}",

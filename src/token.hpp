@@ -58,12 +58,18 @@ enum class TokenType {
 
 class Token {
 public:
-    Token(TokenType type, const std::string&& lexeme,
-        std::unique_ptr<const LiteralVal>&& literal, int line)
+    Token(TokenType type, std::string lexeme,
+        std::unique_ptr<LiteralVal> literal, int line)
         : m_type(type)
-        , m_lexeme(lexeme)
+        , m_lexeme(std::move(lexeme))
         , m_line(line)
         , m_literal(std::move(literal))
+    {
+    }
+    Token(TokenType type, std::string lexeme, int line)
+        : m_type(type)
+        , m_lexeme(std::move(lexeme))
+        , m_line(line)
     {
     }
     Token(const Token& other)

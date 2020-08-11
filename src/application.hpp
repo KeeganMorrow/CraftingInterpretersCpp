@@ -7,8 +7,8 @@ namespace KeegMake {
 
 class Application {
 public:
-    Application(const std::vector<std::string>&& args)
-        : m_args(args)
+    Application(std::vector<std::string>&& args)
+        : m_args(std::move(args))
     {
     }
     int run();

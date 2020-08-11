@@ -12,23 +12,13 @@ int main(int argc, char* argv[])
     (void)argc;
     (void)argv;
     std::vector<std::string> args;
+    // This is a bit pointless, but avoids
+    // performance-inefficient-vector-operation
+    // May want to disable this check, see if it is useful longterm
+    args.reserve(argc);
     for (int i = 0; i < argc; i++) {
         args.emplace_back(argv[i]);
     }
     KeegMake::Application application(std::move(args));
-
-    std::unique_ptr<const Expression> expr = std::make_unique<Binary>(
-        std::make_unique<Unary>(
-            std::make_unique<Token>(TokenType::MINUS, "-",
-                std::make_unique<NoneLiteralVal>(), 1),
-            std::make_unique<Literal>(
-                std::make_unique<NumberLiteralVal>(123.4))),
-        std::make_unique<Token>(TokenType::STAR, "*",
-            std::make_unique<NoneLiteralVal>(), 1),
-        std::make_unique<Grouping>(std::make_unique<Literal>(
-            std::make_unique<NumberLiteralVal>(45.67))));
-
-    spdlog::info(AstPrinter().print(*expr.get()));
-
     return application.run();
 }

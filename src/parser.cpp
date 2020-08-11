@@ -172,7 +172,7 @@ std::unique_ptr<Token> Parser::previous()
     return std::make_unique<Token>(m_tokens.at(m_current - 1));
 }
 
-std::unique_ptr<Token> Parser::consume(TokenType type, std::string message)
+std::unique_ptr<Token> Parser::consume(TokenType type, const std::string &message)
 {
     if (check(type)) {
         return advance();

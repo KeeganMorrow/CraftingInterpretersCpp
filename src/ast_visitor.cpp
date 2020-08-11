@@ -26,12 +26,12 @@ std::string AstPrinter::visitUnary(const Unary& expression) const
 
 std::string
 AstPrinter::parenthesize(const std::string& name,
-    std::vector<const Expression*> expressions) const
+    const std::vector<const Expression*> &expressions) const
 {
     spdlog::info("Parenthesizing {} with tokens", name);
     std::string result {"("};
     result.append(name);
-    for (auto expression : expressions) {
+    for (const auto &expression : expressions) {
         result.append(" ");
         result.append(expression->accept(*this));
     }

@@ -20,7 +20,7 @@ public:
 private:
     [[nodiscard]] std::string
     parenthesize(const std::string& name,
-        std::vector<const Expression*> expressions) const;
+        const std::vector<const Expression*> &expressions) const;
 };
 
 } // namespace KeegMake

@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <utility>
+#include <variant>
 
 #include "exception.hpp"
 
@@ -11,137 +12,104 @@ enum class LiteralValType
     String,
     Bool,
     Number,
-    None
+    Nil
+};
+class LiteralVal;
+
+class NilLiteral
+{
+public:
+    bool operator==(const NilLiteral &other) const
+    {
+        (void)other;
+        return true;
+    }
+    friend LiteralVal;
+
+protected:
+    NilLiteral() = default;
 };
 
-const std::string LiteralValTypeStr_String{"String"};
-const std::string LiteralValTypeStr_Bool{"Bool"};
-const std::string LiteralValTypeStr_Number{"Bool"};
-
-const std::string& LiteralValTypeToStr(LiteralValType type);
+using LiteralVariant = std::variant<double, bool, std::string, NilLiteral>;
 
 class LiteralVal
 {
 public:
-    LiteralVal(const LiteralVal& other) = delete;
-    virtual ~LiteralVal() = default;
+    LiteralVal(std::string value) : m_value(value) {}
+    LiteralVal(double value) : m_value(value) {}
+    LiteralVal(bool value) : m_value(value) {}
+    LiteralVal() : m_value(NilLiteral()) {}
+    LiteralVal(const LiteralVal &) = default;
 
-    [[nodiscard]] virtual std::unique_ptr<LiteralVal> clone() const = 0;
-    [[nodiscard]] virtual LiteralValType type() const = 0;
+    bool operator==(const LiteralVal &other) const { return m_value == other.m_value; }
 
-    [[nodiscard]] virtual std::string literal_str() const
+    bool operator!=(const LiteralVal &other) const { return m_value == other.m_value; }
+
+    [[nodiscard]] LiteralValType type() const
     {
-        throw WrongLiteralType(LiteralValTypeToStr(type()));
-    }
-    [[nodiscard]] virtual bool literal_bool() const
-    {
-        throw WrongLiteralType(LiteralValTypeToStr(type()));
-    }
-    [[nodiscard]] virtual double literal_num() const
-    {
-        throw WrongLiteralType(LiteralValTypeToStr(type()));
+        if (std::holds_alternative<std::string>(m_value))
+        {
+            return LiteralValType::String;
+        }
+        if (std::holds_alternative<bool>(m_value))
+        {
+            return LiteralValType::Number;
+        }
+        if (std::holds_alternative<double>(m_value))
+        {
+            return LiteralValType::Number;
+        }
+        if (std::holds_alternative<NilLiteral>(m_value))
+        {
+            return LiteralValType::Nil;
+        }
+        // TODO: Use better exception
+        throw(std::exception());
     }
 
-    [[nodiscard]] virtual std::string repr() const = 0;
+    [[nodiscard]] std::string repr() const
+    {
+        if (const auto *pstr(std::get_if<std::string>(&m_value)); pstr)
+        {
+            return *pstr;
+        }
+        if (const auto *pdoub(std::get_if<double>(&m_value)); pdoub)
+        {
+            return std::to_string(*pdoub);
+        }
+        if (const auto *pbool(std::get_if<bool>(&m_value)); pbool)
+        {
+            if (*pbool)
+            {
+                return "true";
+            }
+            return "false";
+        }
+        if (const auto *pnil(std::get_if<NilLiteral>(&m_value)); pnil)
+        {
+            return "nil";
+        }
+        throw(std::exception());
+    }
+    template <typename T>
+    friend T getLiteral(LiteralVal &val);
 
 protected:
-    LiteralVal() = default;
+    LiteralVariant m_value;
 };
 
-class BoolLiteralVal : public LiteralVal
+template <typename T>
+T getLiteral(LiteralVal &val)
 {
-public:
-    BoolLiteralVal(bool literal) : m_literal(literal) {}
+    return std::get<T>(val.m_value);
+}
 
-    ~BoolLiteralVal() override = default;
+std::string literalRepresent(const LiteralVal &literal);
 
-    [[nodiscard]] std::unique_ptr<LiteralVal> clone() const override
-    {
-        return std::make_unique<BoolLiteralVal>(m_literal);
-    }
+const std::string LiteralValTypeStr_String{"String"};
+const std::string LiteralValTypeStr_Bool{"Bool"};
+const std::string LiteralValTypeStr_Number{"Number"};
 
-    [[nodiscard]] bool literal_bool() const override
-    {
-        return m_literal;
-    }
-
-    [[nodiscard]] LiteralValType type() const override { return LiteralValType::Bool; }
-
-    [[nodiscard]] std::string repr() const override { return (m_literal) ? "true" : "false"; }
-
-private:
-    const bool m_literal;
-};
-
-class NumberLiteralVal : public LiteralVal
-{
-public:
-    NumberLiteralVal(double literal) : m_literal(literal) {}
-
-    ~NumberLiteralVal() override = default;
-
-    [[nodiscard]] std::unique_ptr<LiteralVal> clone() const override
-    {
-        return std::make_unique<NumberLiteralVal>(m_literal);
-    }
-
-    [[nodiscard]] double literal_num() const override
-    {
-        return m_literal;
-    }
-
-    [[nodiscard]] LiteralValType type() const override { return LiteralValType::Number; }
-
-    [[nodiscard]] std::string repr() const override { return std::to_string(m_literal); }
-
-private:
-    const double m_literal;
-};
-
-class StringLiteralVal : public LiteralVal
-{
-public:
-    StringLiteralVal(std::string literal) : m_literal(std::move(literal)) {}
-
-    ~StringLiteralVal() override = default;
-
-    [[nodiscard]] std::unique_ptr<LiteralVal> clone() const override
-    {
-        return std::make_unique<StringLiteralVal>(m_literal);
-    }
-
-    [[nodiscard]] LiteralValType type() const override { return LiteralValType::String; }
-
-    [[nodiscard]] std::string literal_str() const override
-    {
-        return m_literal;
-    }
-
-    StringLiteralVal(const StringLiteralVal& other) = delete;
-
-    [[nodiscard]] std::string repr() const override { return m_literal; }
-
-private:
-    const std::string m_literal;
-};
-
-class NoneLiteralVal : public LiteralVal
-{
-public:
-    NoneLiteralVal() = default;
-
-    ~NoneLiteralVal() override = default;
-
-    [[nodiscard]] std::unique_ptr<LiteralVal> clone() const override
-    {
-        return std::make_unique<NoneLiteralVal>();
-    }
-
-    [[nodiscard]] LiteralValType type() const override { return LiteralValType::None; }
-
-    NoneLiteralVal(const NoneLiteralVal& other) = delete;
-
-    [[nodiscard]] std::string repr() const override { return "None"; }
-};
+const std::string &LiteralValTypeToStr(LiteralVal &);
 
 }  // namespace KeegMake

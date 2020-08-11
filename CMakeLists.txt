@@ -14,7 +14,7 @@ option(ENABLE_COLOR "Enable colors in the output of all possible tools" ON)
 
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
 
-    set(KEEGMAKE_CXX_FLAGS_WARNING "-Wall;-Wextra;-Werror;")
+    set(KEEGMAKE_CXX_FLAGS_WARNING "-Wall;-Wextra;-Werror;-Wno-unused-private-field")
     set(KEEGMAKE_CXX_FLAGS_OPTIMIZATION "-Og;-g")
     set(KEEGMAKE_CXX_FLAGS_TEST "--coverage")
     set(KEEGMAKE_CXX_FLAGS_OTHERS "")

@@ -34,7 +34,8 @@ int Environment::run(const std::string& source)
     {
         spdlog::info("{}", AstPrinter().print(*expression));
         auto val = Interpreter().evaluate(*expression);
-        if (val){
+        if (val)
+        {
             spdlog::info("Got the value {}", val->repr());
         }
         else

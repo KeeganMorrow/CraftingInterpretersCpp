@@ -19,57 +19,59 @@ std::unique_ptr<LiteralVal> Interpreter::visitBinary(const Binary& expression) c
     {
     case TokenType::MINUS:
     {
-        double result = left->literal_num() - right->literal_num();
-        return std::make_unique<NumberLiteralVal>(result);
+        auto result = getLiteral<double>(*left) - getLiteral<double>(*right);
+        return std::make_unique<LiteralVal>(result);
     }
     case TokenType::SLASH:
     {
-        double result = left->literal_num() / right->literal_num();
-        return std::make_unique<NumberLiteralVal>(result);
+        auto result = getLiteral<double>(*left) / getLiteral<double>(*right);
+        return std::make_unique<LiteralVal>(result);
     }
     case TokenType::STAR:
     {
-        double result = left->literal_num() * right->literal_num();
-        return std::make_unique<NumberLiteralVal>(result);
+        auto result = getLiteral<double>(*left) * getLiteral<double>(*right);
+        return std::make_unique<LiteralVal>(result);
     }
     case TokenType::PLUS:
     {
         if (left->type() == LiteralValType::Number && right->type() == LiteralValType::Number)
         {
-            double result = left->literal_num() + right->literal_num();
-            return std::make_unique<NumberLiteralVal>(result);
+            auto result = getLiteral<double>(*left) + getLiteral<double>(*right);
+            return std::make_unique<LiteralVal>(result);
         }
         if (left->type() == LiteralValType::String && right->type() == LiteralValType::String)
         {
-            auto result_str = left->literal_str() + right->literal_str();
-            return std::make_unique<StringLiteralVal>(result_str);
+            auto result = getLiteral<std::string>(*left) + getLiteral<std::string>(*right);
+            return std::make_unique<LiteralVal>(result);
         }
         break;
     }
     case TokenType::GREATER:
     {
-        bool result = (left->literal_num() > right->literal_num());
-        return std::make_unique<BoolLiteralVal>(result);
+        bool result = (getLiteral<double>(*left) > getLiteral<double>(*right));
+        return std::make_unique<LiteralVal>(result);
     }
     case TokenType::GREATER_EQUAL:
     {
-        bool result = (left->literal_num() >= right->literal_num());
-        return std::make_unique<BoolLiteralVal>(result);
+        bool result = (getLiteral<double>(*left) >= getLiteral<double>(*right));
+        return std::make_unique<LiteralVal>(result);
     }
     case TokenType::LESS:
     {
-        bool result = (left->literal_num() < right->literal_num());
-        return std::make_unique<BoolLiteralVal>(result);
+        bool result = (getLiteral<double>(*left) < getLiteral<double>(*right));
+        return std::make_unique<LiteralVal>(result);
     }
     case TokenType::LESS_EQUAL:
     {
-        bool result = (left->literal_num() <= right->literal_num());
-        return std::make_unique<BoolLiteralVal>(result);
+        bool result = (getLiteral<double>(*left) <= getLiteral<double>(*right));
+        return std::make_unique<LiteralVal>(result);
     }
     case TokenType::BANG_EQUAL:
-        // TODO: Add Not equal
+    {
+        return std::make_unique<LiteralVal>(*left == *right);
+    }
     case TokenType::EQUAL_EQUAL:
-        return isEqual(*left, *right);
+        return std::make_unique<LiteralVal>(*left != *right);
     default:
         break;
     }
@@ -84,7 +86,7 @@ std::unique_ptr<LiteralVal> Interpreter::visitGrouping(const Grouping& expressio
 std::unique_ptr<LiteralVal> Interpreter::visitLiteral(const Literal& expression) const
 {
     // TODO : Check against nullptr. Not sure what to do if we see one at the moment
-    return expression.value().clone();
+    return std::make_unique<LiteralVal>(expression.value());
 }
 
 std::unique_ptr<LiteralVal> Interpreter::visitUnary(const Unary& expression) const
@@ -94,7 +96,7 @@ std::unique_ptr<LiteralVal> Interpreter::visitUnary(const Unary& expression) con
     switch (expression.token().type())
     {
     case TokenType::MINUS:
-        return std::make_unique<NumberLiteralVal>(-(right->literal_num()));
+        return std::make_unique<LiteralVal>(-(getLiteral<double>(*right)));
     case TokenType::BANG:
         return isTruthy(*right);
     default:
@@ -106,31 +108,11 @@ std::unique_ptr<LiteralVal> Interpreter::visitUnary(const Unary& expression) con
 [[nodiscard]] std::unique_ptr<LiteralVal> Interpreter::isTruthy(const LiteralVal& lval) const
 {
     bool result = true;
-    if (lval.type() == LiteralValType::None)
+    if (lval.type() == LiteralValType::Nil)
     {
         result = false;
     }
-    return std::make_unique<BoolLiteralVal>(result);
-}
-
-[[nodiscard]] std::unique_ptr<LiteralVal> Interpreter::isEqual(const LiteralVal& a,
-                                                               const LiteralVal& b) const
-{
-    bool result;
-    if (a.type() == LiteralValType::None)
-    {
-        if (b.type() == LiteralValType::None)
-        {
-            result = true;
-        }
-        else
-        {
-            result = false;
-        }
-        return std::make_unique<BoolLiteralVal>(result);
-    }
-// TODO: Implement other types for equality. It is a bit trickier
-    return nullptr;
+    return std::make_unique<LiteralVal>(result);
 }
 
 void Interpreter::checkNumberOperand(const Token& token, const LiteralVal& operand)

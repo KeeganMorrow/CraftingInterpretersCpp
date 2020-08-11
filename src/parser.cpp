@@ -119,20 +119,20 @@ std::unique_ptr<Expression> Parser::primary()
 {
     if (match({TokenType::FALSE}))
     {
-        return std::make_unique<Literal>(std::make_unique<BoolLiteralVal>(false));
+        return std::make_unique<Literal>(std::make_unique<LiteralVal>(false));
     }
     if (match({TokenType::TRUE}))
     {
-        return std::make_unique<Literal>(std::make_unique<BoolLiteralVal>(true));
+        return std::make_unique<Literal>(std::make_unique<LiteralVal>(true));
     }
     if (match({TokenType::NIL}))
     {
-        return std::make_unique<Literal>(std::make_unique<NoneLiteralVal>());
+        return std::make_unique<Literal>(std::make_unique<LiteralVal>());
     }
 
     if (match({TokenType::NUMBER, TokenType::STRING}))
     {
-        return std::make_unique<Literal>(previous()->literal().clone());
+        return std::make_unique<Literal>(std::make_unique<LiteralVal>(previous()->literal()));
     }
 
     if (match({TokenType::LEFT_PAREN}))

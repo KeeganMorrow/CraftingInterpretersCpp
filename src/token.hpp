@@ -66,15 +66,11 @@ public:
         : m_type(type), m_lexeme(std::move(lexeme)), m_line(line), m_literal(std::move(literal))
     {
     }
-    Token(TokenType type, std::string lexeme, int line)
-        : m_type(type), m_lexeme(std::move(lexeme)), m_line(line)
-    {
-    }
     Token(const Token& other)
         : m_type(other.m_type),
           m_lexeme(other.m_lexeme),
           m_line(other.m_line),
-          m_literal(other.m_literal ? other.m_literal->clone() : nullptr)
+          m_literal(std::make_unique<LiteralVal>(*other.m_literal))
     {
     }
     [[nodiscard]] TokenType type() const { return m_type; }

@@ -1,16 +1,15 @@
 #pragma once
-#include "interpreter.hpp"
 #include <string>
 #include <vector>
 
-namespace KeegMake {
+#include "interpreter.hpp"
 
-class Application {
+namespace KeegMake
+{
+class Application
+{
 public:
-    Application(std::vector<std::string>&& args)
-        : m_args(std::move(args))
-    {
-    }
+    Application(std::vector<std::string>&& args) : m_args(std::move(args)) {}
     int run();
 
     // Delete undesired constructors (Allow move, not copy or assign)
@@ -21,4 +20,4 @@ private:
     const std::vector<std::string> m_args;
     Interpreter m_interpreter;
 };
-} // namespace KeegMake
+}  // namespace KeegMake

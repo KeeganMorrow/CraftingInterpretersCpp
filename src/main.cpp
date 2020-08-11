@@ -1,9 +1,11 @@
+#include <spdlog/spdlog.h>
+
+#include <memory>
+
 #include "application.hpp"
 #include "ast_visitor.hpp"
 #include "expressions.hpp"
 #include "literal.hpp"
-#include <memory>
-#include <spdlog/spdlog.h>
 
 using namespace KeegMake;
 
@@ -16,7 +18,8 @@ int main(int argc, char* argv[])
     // performance-inefficient-vector-operation
     // May want to disable this check, see if it is useful longterm
     args.reserve(argc);
-    for (int i = 0; i < argc; i++) {
+    for (int i = 0; i < argc; i++)
+    {
         args.emplace_back(argv[i]);
     }
     KeegMake::Application application(std::move(args));

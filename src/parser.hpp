@@ -1,19 +1,18 @@
 #pragma once
-#include "expression_ast.hpp"
-#include "parser.hpp"
-#include "token.hpp"
 #include <expressions.hpp>
 #include <memory>
 #include <vector>
 
-namespace KeegMake {
+#include "expression_ast.hpp"
+#include "parser.hpp"
+#include "token.hpp"
 
-class Parser {
+namespace KeegMake
+{
+class Parser
+{
 public:
-    Parser(std::vector<Token>&& tokens)
-        : m_tokens(tokens)
-    {
-    }
+    Parser(std::vector<Token>&& tokens) : m_tokens(tokens) {}
 
     std::unique_ptr<Expression> parse();
 
@@ -38,9 +37,9 @@ private:
 
     static ParseError error(std::unique_ptr<Token> token, const std::string& message);
 
-    std::unique_ptr<Token> consume(TokenType type, const std::string &message);
+    std::unique_ptr<Token> consume(TokenType type, const std::string& message);
 
     const std::vector<Token> m_tokens;
     int m_current = 0;
 };
-} //namespace KeegMake
+}  // namespace KeegMake

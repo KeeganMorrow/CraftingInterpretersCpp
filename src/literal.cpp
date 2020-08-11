@@ -1,10 +1,11 @@
 #include "literal.hpp"
 
-namespace KeegMake {
-
+namespace KeegMake
+{
 const std::string& LiteralValTypeToStr(LiteralValType type)
 {
-    switch (type) {
+    switch (type)
+    {
         case LiteralValType::String:
             return LiteralValTypeStr_String;
         case LiteralValType::Bool:
@@ -15,4 +16,4 @@ const std::string& LiteralValTypeToStr(LiteralValType type)
             throw WrongLiteralType("?");
     }
 }
-} // namespace KeegMake
+}  // namespace KeegMake

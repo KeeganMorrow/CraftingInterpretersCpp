@@ -2,7 +2,8 @@
 #include "expression_ast.hpp"
 #include "token.hpp"
 
-namespace KeegMake {
+namespace KeegMake
+{
 #if 0
     class Expr {
 
@@ -21,5 +22,5 @@ namespace KeegMake {
         const Expr m_right;
 
     };
-#endif // 0
-} // namespace KeegMake
+#endif  // 0
+}  // namespace KeegMake

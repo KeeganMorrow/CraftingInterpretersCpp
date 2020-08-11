@@ -1,12 +1,15 @@
 #pragma once
-#include "exception.hpp"
-#include "literal.hpp"
 #include <spdlog/fmt/fmt.h>
+
 #include <string>
 #include <type_traits>
-namespace KeegMake {
 
-enum class TokenType {
+#include "exception.hpp"
+#include "literal.hpp"
+namespace KeegMake
+{
+enum class TokenType
+{
     // Single character tokens
     LEFT_PAREN,
     RIGHT_PAREN,
@@ -56,27 +59,22 @@ enum class TokenType {
     END_OF_FILE
 };
 
-class Token {
+class Token
+{
 public:
-    Token(TokenType type, std::string lexeme,
-        std::unique_ptr<LiteralVal> literal, int line)
-        : m_type(type)
-        , m_lexeme(std::move(lexeme))
-        , m_line(line)
-        , m_literal(std::move(literal))
+    Token(TokenType type, std::string lexeme, std::unique_ptr<LiteralVal> literal, int line)
+        : m_type(type), m_lexeme(std::move(lexeme)), m_line(line), m_literal(std::move(literal))
     {
     }
     Token(TokenType type, std::string lexeme, int line)
-        : m_type(type)
-        , m_lexeme(std::move(lexeme))
-        , m_line(line)
+        : m_type(type), m_lexeme(std::move(lexeme)), m_line(line)
     {
     }
     Token(const Token& other)
-        : m_type(other.m_type)
-        , m_lexeme(other.m_lexeme)
-        , m_line(other.m_line)
-        , m_literal(other.m_literal ? other.m_literal->clone() : nullptr)
+        : m_type(other.m_type),
+          m_lexeme(other.m_lexeme),
+          m_line(other.m_line),
+          m_literal(other.m_literal ? other.m_literal->clone() : nullptr)
     {
     }
     [[nodiscard]] TokenType type() const { return m_type; }
@@ -88,11 +86,10 @@ public:
     {
         if (m_literal)
         {
-            return fmt::format("TokenType: {}, lexeme: {}, literal: {}", m_type,
-                m_lexeme, m_literal->repr());
+            return fmt::format("TokenType: {}, lexeme: {}, literal: {}", m_type, m_lexeme,
+                               m_literal->repr());
         }
-        return fmt::format("TokenType: {}, lexeme: {}, literal: N/A", m_type,
-            m_lexeme);
+        return fmt::format("TokenType: {}, lexeme: {}, literal: N/A", m_type, m_lexeme);
     }
 
 private:
@@ -102,4 +99,4 @@ private:
     std::unique_ptr<const LiteralVal> m_literal;
 };
 
-} // namespace KeegMake
+}  // namespace KeegMake

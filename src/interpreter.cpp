@@ -1,15 +1,18 @@
 #include "interpreter.hpp"
+
+#include <spdlog/spdlog.h>
+
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+
 #include "application.hpp"
 #include "ast_visitor.hpp"
 #include "parser.hpp"
 #include "scanner.hpp"
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <spdlog/spdlog.h>
 
-namespace KeegMake {
-
+namespace KeegMake
+{
 const int EXIT_RESULT_OK = 0;
 const int EXIT_RESULT_PARSE_ERROR = 1;
 
@@ -19,7 +22,8 @@ int Interpreter::run(const std::string& source)
     Scanner scanner(source);
     auto tokens = scanner.scanTokens();
 
-    for (auto& token : tokens) {
+    for (auto& token : tokens)
+    {
         spdlog::info("Found token {}", token.repr());
     }
 
@@ -29,7 +33,8 @@ int Interpreter::run(const std::string& source)
     {
         spdlog::info("{}", AstPrinter().print(*expression));
     }
-    else {
+    else
+    {
         m_hadError = true;
         spdlog::warn("No valid expression after parsing, see previous output");
         result = EXIT_RESULT_PARSE_ERROR;
@@ -40,11 +45,13 @@ int Interpreter::run(const std::string& source)
 
 int Interpreter::runPrompt()
 {
-    while (true) {
+    while (true)
+    {
         std::cout << "> ";
         std::string line;
         std::getline(std::cin, line);
-        if (line == "exit") {
+        if (line == "exit")
+        {
             break;
         }
         run(line);
@@ -55,40 +62,42 @@ int Interpreter::runPrompt()
 
 int Interpreter::runFile(const std::string& filepath)
 {
-    int status {0};
+    int status{0};
     spdlog::info("Opening file {}", filepath);
 
-    std::filesystem::path path {filepath};
+    std::filesystem::path path{filepath};
     std::ifstream file;
-    try {
+    try
+    {
         std::ostringstream buf;
         file.open(path);
-        if (!file.fail()) {
+        if (!file.fail())
+        {
             buf << file.rdbuf();
-            auto result =run(buf.str());
-            if (m_hadError || result) {
+            auto result = run(buf.str());
+            if (m_hadError || result)
+            {
                 status = EXIT_RESULT_PARSE_ERROR;
             }
-        } else {
+        }
+        else
+        {
             spdlog::error("Error opening file {}", filepath);
         }
-    } catch (std::ifstream::failure& e) {
-        spdlog::error("Failed operating on file '{}'", e.what(),
-            e.code().value());
+    }
+    catch (std::ifstream::failure& e)
+    {
+        spdlog::error("Failed operating on file '{}'", e.what(), e.code().value());
     }
 
     return status;
 }
 
-void Interpreter::error(int line, const std::string& message)
-{
-    report(line, "", message);
-}
+void Interpreter::error(int line, const std::string& message) { report(line, "", message); }
 
-void Interpreter::report(int line, const std::string& where,
-    const std::string& message)
+void Interpreter::report(int line, const std::string& where, const std::string& message)
 {
     spdlog::error("[line {}] Error {}: {}", line, where, message);
 }
 
-} // namespace KeegMake
+}  // namespace KeegMake

@@ -123,8 +123,7 @@ std::unique_ptr<Expression> Parser::primary()
 
     if (match({TokenType::LEFT_PAREN})) {
         auto expr = expression();
-        consume(TokenType::RIGHT_PAREN, "Expect '(' after expression.");
-        auto right = unary();
+        consume(TokenType::RIGHT_PAREN, "Expect ')' after expression.");
         return std::make_unique<Grouping>(std::move(expr));
     }
 
@@ -185,9 +184,9 @@ ParseError Parser::error(std::unique_ptr<Token> token, const std::string& messag
 {
     // TODO Feed this up to other logging function and make it like original Java
     if (token->type() == TokenType::END_OF_FILE) {
-        spdlog::error("ERROR - line {} at end {}", token->line(), message);
+        spdlog::error(" line {} at end {}", token->line(), message);
     } else {
-        spdlog::error("ERROR - {} at '{}' {}", token->line(), token->lexeme(), message);
+        spdlog::error(" {} at '{}' {}", token->line(), token->lexeme(), message);
     }
 
     return ParseError(message);

@@ -123,7 +123,7 @@ def defineType(f, basename, type, returntypes):
     writeline("};")
 
 
-def defineAst(outputdir, filename, basename, types):
+def defineAst(outputdir, filename, basename, types, returntypes):
     def writeline(line):
         f.write(line + '\n')
 
@@ -143,7 +143,6 @@ def defineAst(outputdir, filename, basename, types):
         writeline("class {}{{".format(basename))
         writeline("public:")
 
-        returntypes = [ReturnType("String","std::string")]
         defineVisitor(f, basename, returntypes, types)
 
         writeline("    virtual ~{}() = default;".format(basename))
@@ -167,8 +166,9 @@ def main():
         "Grouping : Expression expression", "Literal : LiteralVal value",
         "Unary : Token token, Expression right"
     ]
+    returntypes = [ReturnType("String","std::string"), ReturnType("LiteralVal", "std::unique_ptr<LiteralVal>")]
     parsed_types = parseFields(types)
-    defineAst(args.output_directory, 'expression_ast', 'Expression', parsed_types)
+    defineAst(args.output_directory, 'expression_ast', 'Expression', parsed_types, returntypes)
     return 0
 
 

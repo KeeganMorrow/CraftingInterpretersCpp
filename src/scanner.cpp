@@ -30,88 +30,88 @@ void Scanner::scanToken()
     char c = advance();
     switch (c)
     {
-        case '(':
-            addToken(TokenType::LEFT_PAREN);
-            break;
-        case ')':
-            addToken(TokenType::RIGHT_PAREN);
-            break;
-        case '{':
-            addToken(TokenType::LEFT_BRACE);
-            break;
-        case '}':
-            addToken(TokenType::RIGHT_BRACE);
-            break;
-        case ',':
-            addToken(TokenType::COMMA);
-            break;
-        case '.':
-            addToken(TokenType::DOT);
-            break;
-        case '-':
-            addToken(TokenType::MINUS);
-            break;
-        case '+':
-            addToken(TokenType::PLUS);
-            break;
-        case ';':
-            addToken(TokenType::SEMICOLON);
-            break;
-        case '*':
-            addToken(TokenType::STAR);
-            break;
-        case '!':
-            addToken(match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
-            break;
-        case '=':
-            addToken(match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);
-            break;
-        case '<':
-            addToken(match('=') ? TokenType::LESS_EQUAL : TokenType::LESS);
-            break;
-        case '>':
-            addToken(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
-            break;
-        case '/':
-            if (match('/'))
+    case '(':
+        addToken(TokenType::LEFT_PAREN);
+        break;
+    case ')':
+        addToken(TokenType::RIGHT_PAREN);
+        break;
+    case '{':
+        addToken(TokenType::LEFT_BRACE);
+        break;
+    case '}':
+        addToken(TokenType::RIGHT_BRACE);
+        break;
+    case ',':
+        addToken(TokenType::COMMA);
+        break;
+    case '.':
+        addToken(TokenType::DOT);
+        break;
+    case '-':
+        addToken(TokenType::MINUS);
+        break;
+    case '+':
+        addToken(TokenType::PLUS);
+        break;
+    case ';':
+        addToken(TokenType::SEMICOLON);
+        break;
+    case '*':
+        addToken(TokenType::STAR);
+        break;
+    case '!':
+        addToken(match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
+        break;
+    case '=':
+        addToken(match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);
+        break;
+    case '<':
+        addToken(match('=') ? TokenType::LESS_EQUAL : TokenType::LESS);
+        break;
+    case '>':
+        addToken(match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER);
+        break;
+    case '/':
+        if (match('/'))
+        {
+            // A comment goes until the end of the line.
+            while (peek() != '\n' && !isAtEnd())
             {
-                // A comment goes until the end of the line.
-                while (peek() != '\n' && !isAtEnd())
-                {
-                    advance();
-                }
+                advance();
             }
-            else
-            {
-                addToken(TokenType::SLASH);
-            }
-            break;
-        case '"':
-            string();
-            break;
-        case ' ':
-        case '\r':
-        case '\t':
-            // Ignore whitespace.
-            break;
+        }
+        else
+        {
+            addToken(TokenType::SLASH);
+        }
+        break;
+    case '"':
+        string();
+        break;
+    case ' ':
+    case '\r':
+    case '\t':
+        // Ignore whitespace.
+        break;
 
-        case '\n':
-            m_line++;
-            break;
-        default:
-            if (std::isdigit(c))
-            {
-                number();
-            }
-            else if (std::isalpha(c))
-            {
-                identifier();
-            }
-            else
-            {
-                Environment::error(m_line, "Unexpected character");
-            }
-            break;
+    case '\n':
+        m_line++;
+        break;
+    default:
+        if (std::isdigit(c))
+        {
+            number();
+        }
+        else if (std::isalpha(c))
+        {
+            identifier();
+        }
+        else
+        {
+            Environment::error(m_line, "Unexpected character");
+        }
+        break;
     }
 }
 
@@ -209,7 +209,7 @@ void Scanner::string()
     advance();
 
     // Trim those quotes
-    std::string value = m_source.substr(m_start + 1, m_current - m_start - 1);
+    std::string value = m_source.substr(m_start + 1, m_current - m_start - 2);
     addToken(TokenType::STRING, value);
 }
 
@@ -234,7 +234,7 @@ void Scanner::number()
 
     auto numstr = m_source.substr(m_start, m_current - m_start);
     auto val = std::stod(numstr);
-    addToken(TokenType::NUMBER, val);
+    addToken(TokenType::NUMBER, (double)val);
 }
 
 void Scanner::identifier()

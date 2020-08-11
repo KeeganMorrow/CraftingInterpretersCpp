@@ -17,8 +17,8 @@ public:
     [[nodiscard]] std::string visitUnary(const Unary& expression) const override;
 
 private:
-    [[nodiscard]] std::string
-    parenthesize(const std::string& name, const std::vector<const Expression*>& expressions) const;
+    [[nodiscard]] std::string parenthesize(const std::string& name,
+                                           const std::vector<const Expression*>& expressions) const;
 };
 
 }  // namespace KeegMake

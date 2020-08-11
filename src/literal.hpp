@@ -60,6 +60,11 @@ public:
         return std::make_unique<BoolLiteralVal>(m_literal);
     }
 
+    [[nodiscard]] bool literal_bool() const override
+    {
+        return m_literal;
+    }
+
     [[nodiscard]] LiteralValType type() const override { return LiteralValType::Bool; }
 
     [[nodiscard]] std::string repr() const override { return (m_literal) ? "true" : "false"; }
@@ -78,6 +83,11 @@ public:
     [[nodiscard]] std::unique_ptr<LiteralVal> clone() const override
     {
         return std::make_unique<NumberLiteralVal>(m_literal);
+    }
+
+    [[nodiscard]] double literal_num() const override
+    {
+        return m_literal;
     }
 
     [[nodiscard]] LiteralValType type() const override { return LiteralValType::Number; }
@@ -101,6 +111,11 @@ public:
     }
 
     [[nodiscard]] LiteralValType type() const override { return LiteralValType::String; }
+
+    [[nodiscard]] std::string literal_str() const override
+    {
+        return m_literal;
+    }
 
     StringLiteralVal(const StringLiteralVal& other) = delete;
 

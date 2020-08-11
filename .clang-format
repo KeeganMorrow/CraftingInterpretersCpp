@@ -9,8 +9,7 @@ AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakAfterReturnType: None
 BreakBeforeBraces: Allman
 ColumnLimit: 100
-Cpp11BracedListStyle: 'true'
-IndentCaseLabels: 'true'
+Cpp11BracedListStyle: true
+IndentCaseLabels: false
 IndentWidth: 4
-PenaltyReturnTypeOnItsOwnLine: '0'
 ...

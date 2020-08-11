@@ -8,6 +8,7 @@
 
 #include "application.hpp"
 #include "ast_visitor.hpp"
+#include "interpreter.hpp"
 #include "parser.hpp"
 #include "scanner.hpp"
 
@@ -32,6 +33,14 @@ int Environment::run(const std::string& source)
     if (expression)
     {
         spdlog::info("{}", AstPrinter().print(*expression));
+        auto val = Interpreter().evaluate(*expression);
+        if (val){
+            spdlog::info("Got the value {}", val->repr());
+        }
+        else
+        {
+            spdlog::info("Evaluate returned nothing");
+        }
     }
     else
     {

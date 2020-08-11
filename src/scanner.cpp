@@ -115,7 +115,7 @@ void Scanner::addToken(TokenType type) {
     spdlog::info("Adding a token with lexeme {} literal N/A start {} current {}",
         text, m_start, m_current);
     m_tokens.emplace_back(
-        Token {type, std::move(text), m_line});
+        Token {type, text, m_line});
 }
 
 

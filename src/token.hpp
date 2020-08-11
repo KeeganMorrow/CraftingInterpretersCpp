@@ -76,7 +76,7 @@ public:
         : m_type(other.m_type)
         , m_lexeme(other.m_lexeme)
         , m_line(other.m_line)
-        , m_literal(other.m_literal->clone())
+        , m_literal(other.m_literal ? other.m_literal->clone() : nullptr)
     {
     }
     [[nodiscard]] TokenType type() const { return m_type; }
@@ -86,8 +86,13 @@ public:
 
     [[nodiscard]] std::string repr() const
     {
-        return fmt::format("TokenType: {}, lexeme: {}, literal: {}", m_type,
-            m_lexeme, m_literal->repr());
+        if (m_literal)
+        {
+            return fmt::format("TokenType: {}, lexeme: {}, literal: {}", m_type,
+                m_lexeme, m_literal->repr());
+        }
+        return fmt::format("TokenType: {}, lexeme: {}, literal: N/A", m_type,
+            m_lexeme);
     }
 
 private:

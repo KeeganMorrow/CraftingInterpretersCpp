@@ -45,9 +45,9 @@ target_include_directories(ast INTERFACE "${CMAKE_BINARY_DIR}/include")
 add_executable(main src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/application.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ast_visitor.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/environment.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/exception.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/expressions.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/interpreter.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/literal.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/parser.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scanner.cpp

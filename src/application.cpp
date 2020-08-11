@@ -14,11 +14,11 @@ int Application::run()
 
     if (m_args.size() == 1)
     {
-        status = m_interpreter.runPrompt();
+        status = m_environment.runPrompt();
     }
     else if (m_args.size() == 2)
     {
-        status = m_interpreter.runFile(m_args[1]);
+        status = m_environment.runFile(m_args[1]);
     }
     else
     {

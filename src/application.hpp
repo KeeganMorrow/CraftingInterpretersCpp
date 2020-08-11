@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 
-#include "interpreter.hpp"
+#include "environment.hpp"
 
 namespace KeegMake
 {
@@ -18,6 +18,6 @@ public:
 
 private:
     const std::vector<std::string> m_args;
-    Interpreter m_interpreter;
+    Environment m_environment;
 };
 }  // namespace KeegMake

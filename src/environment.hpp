@@ -3,10 +3,10 @@
 
 namespace KeegMake
 {
-class Interpreter
+class Environment
 {
 public:
-    Interpreter() = default;
+    Environment() = default;
 
     int runFile(const std::string& filepath);
     int run(const std::string& source);
@@ -16,8 +16,8 @@ public:
     static void report(int line, const std::string& where, const std::string& message);
 
     // Delete undesired constructors (Allow move, not copy or assign)
-    Interpreter(const Interpreter&) = delete;
-    Interpreter& operator=(const Interpreter&) = delete;
+    Environment(const Environment&) = delete;
+    Environment& operator=(const Environment&) = delete;
 
 private:
     bool m_hadError{false};

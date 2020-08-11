@@ -1,4 +1,4 @@
-#include "interpreter.hpp"
+#include "environment.hpp"
 
 #include <spdlog/spdlog.h>
 
@@ -16,7 +16,7 @@ namespace KeegMake
 const int EXIT_RESULT_OK = 0;
 const int EXIT_RESULT_PARSE_ERROR = 1;
 
-int Interpreter::run(const std::string& source)
+int Environment::run(const std::string& source)
 {
     int result{EXIT_RESULT_OK};
     Scanner scanner(source);
@@ -43,7 +43,7 @@ int Interpreter::run(const std::string& source)
     return result;
 }
 
-int Interpreter::runPrompt()
+int Environment::runPrompt()
 {
     while (true)
     {
@@ -60,7 +60,7 @@ int Interpreter::runPrompt()
     return 0;
 }
 
-int Interpreter::runFile(const std::string& filepath)
+int Environment::runFile(const std::string& filepath)
 {
     int status{0};
     spdlog::info("Opening file {}", filepath);
@@ -93,9 +93,9 @@ int Interpreter::runFile(const std::string& filepath)
     return status;
 }
 
-void Interpreter::error(int line, const std::string& message) { report(line, "", message); }
+void Environment::error(int line, const std::string& message) { report(line, "", message); }
 
-void Interpreter::report(int line, const std::string& where, const std::string& message)
+void Environment::report(int line, const std::string& where, const std::string& message)
 {
     spdlog::error("[line {}] Error {}: {}", line, where, message);
 }

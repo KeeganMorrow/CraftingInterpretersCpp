@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "interpreter.hpp"
+#include "environment.hpp"
 
 namespace KeegMake
 {
@@ -109,7 +109,7 @@ void Scanner::scanToken()
             }
             else
             {
-                Interpreter::error(m_line, "Unexpected character");
+                Environment::error(m_line, "Unexpected character");
             }
             break;
     }
@@ -201,7 +201,7 @@ void Scanner::string()
 
     if (isAtEnd())
     {
-        Interpreter::error(m_line, "Unterminated string");
+        Environment::error(m_line, "Unterminated string");
         return;
     }
 

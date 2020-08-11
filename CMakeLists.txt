@@ -14,6 +14,7 @@ include(cmake/ClangTidy.cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_custom_target(gen_ast COMMAND ${CMAKE_SOURCE_DIR}/tools/astGen.py ${CMAKE_BINARY_DIR}/include BYPRODUCTS "${CMAKE_BINARY_DIR}/include/expr_ast.hpp")
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/include")
 add_library(ast INTERFACE)
 add_dependencies(ast gen_ast)
 target_include_directories(ast INTERFACE "${CMAKE_BINARY_DIR}/include")

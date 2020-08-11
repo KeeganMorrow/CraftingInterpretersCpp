@@ -1,5 +1,7 @@
 #include "interpreter.hpp"
 #include "application.hpp"
+#include "ast_visitor.hpp"
+#include "parser.hpp"
 #include "scanner.hpp"
 #include <filesystem>
 #include <fstream>
@@ -12,6 +14,13 @@ int Interpreter::run(const std::string& source)
 {
     Scanner scanner(std::move(source));
     auto tokens = scanner.scanTokens();
+    Parser parser(std::move(tokens));
+    auto expression = parser.parse();
+    if (expression)
+        spdlog::info("{}", AstPrinter().print(*expression));
+    else {
+        spdlog::warn("No valid expression after parsing, see previous output");
+    }
 
     for (auto& token : tokens) {
         spdlog::info("Found token {}", token.repr());

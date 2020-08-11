@@ -18,7 +18,7 @@ std::vector<Token> Scanner::scanTokens()
     };
 
     m_tokens.emplace_back(
-        Token {TokenType::END_OF_FILE, "", NoneLiteralVal {}, m_line});
+        Token {TokenType::END_OF_FILE, "", std::move(std::make_unique<NoneLiteralVal>()), m_line});
     return m_tokens;
 }
 
@@ -118,7 +118,7 @@ void Scanner::addToken(TokenType type, const std::string& literal)
     spdlog::info("Adding a token with lexeme {} literal {} start {} current {}",
         text, literal, m_start, m_current);
     m_tokens.emplace_back(
-        Token {type, std::move(text), StringLiteralVal {literal}, m_line});
+        Token {type, std::move(text), std::make_unique<StringLiteralVal>(literal), m_line});
 }
 
 void Scanner::addToken(TokenType type, bool literal)
@@ -127,7 +127,7 @@ void Scanner::addToken(TokenType type, bool literal)
     spdlog::info("Adding a token with lexeme {} literal {} start {} current {}",
         text, literal, m_start, m_current);
     m_tokens.emplace_back(
-        Token {type, std::move(text), BoolLiteralVal {literal}, m_line});
+        Token {type, std::move(text), std::make_unique<BoolLiteralVal>(literal), m_line});
 }
 
 void Scanner::addToken(TokenType type, double literal)
@@ -136,7 +136,7 @@ void Scanner::addToken(TokenType type, double literal)
     spdlog::info("Adding a token with lexeme {} literal {} start {} current {}",
         text, literal, m_start, m_current);
     m_tokens.emplace_back(
-        Token {type, std::move(text), NumberLiteralVal {literal}, m_line});
+        Token {type, std::move(text), std::make_unique<NumberLiteralVal>(literal), m_line});
 }
 
 bool Scanner::match(char expected)

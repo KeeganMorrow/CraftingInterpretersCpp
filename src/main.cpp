@@ -20,11 +20,11 @@ int main(int argc, char* argv[])
     std::unique_ptr<const Expression> expr = std::make_unique<Binary>(
         std::make_unique<Unary>(
             std::make_unique<Token>(TokenType::MINUS, "-",
-                LiteralVal(LiteralValType::None), 1),
+                std::make_unique<NoneLiteralVal>(), 1),
             std::make_unique<Literal>(
                 std::make_unique<NumberLiteralVal>(123.4))),
         std::make_unique<Token>(TokenType::STAR, "*",
-            LiteralVal(LiteralValType::None), 1),
+            std::make_unique<NoneLiteralVal>(), 1),
         std::make_unique<Grouping>(std::make_unique<Literal>(
             std::make_unique<NumberLiteralVal>(45.67))));
 

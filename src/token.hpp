@@ -59,28 +59,36 @@ enum class TokenType {
 class Token {
 public:
     Token(TokenType type, const std::string&& lexeme,
-        const LiteralVal&& literal, int line)
+        std::unique_ptr<const LiteralVal>&& literal, int line)
         : m_type(type)
         , m_lexeme(lexeme)
-        , m_literal(literal)
+        , m_literal(std::move(literal))
         , m_line(line)
+    {
+    }
+    Token(const Token& other)
+        : m_type(other.m_type)
+        , m_lexeme(other.m_lexeme)
+        , m_line(other.m_line)
+        , m_literal(other.m_literal->clone())
     {
     }
     [[nodiscard]] TokenType type() const { return m_type; }
     [[nodiscard]] std::string lexeme() const { return m_lexeme; }
     [[nodiscard]] int line() const { return m_line; }
+    [[nodiscard]] const LiteralVal& literal() const { return *m_literal; };
 
     [[nodiscard]] std::string repr() const
     {
         return fmt::format("TokenType: {}, lexeme: {}, literal: {}", m_type,
-            m_lexeme, m_literal.repr());
+            m_lexeme, m_literal->repr());
     }
 
 private:
     TokenType m_type;
     const std::string m_lexeme;
     const int m_line;
-    const LiteralVal m_literal;
+    std::unique_ptr<const LiteralVal> m_literal;
 };
 
 } // namespace KeegMake

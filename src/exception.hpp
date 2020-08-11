@@ -4,6 +4,8 @@
 
 namespace KeegMake {
 
+class Token;
+
 class BaseException : public std::exception {
 public:
     BaseException(const std::string& error_msg)
@@ -27,4 +29,15 @@ private:
     const std::string m_type;
 };
 
+class ParseError : public BaseException {
+public:
+    // TODO: Add real text description to this!
+    ParseError(const std::string& type)
+        : BaseException(type)
+    {
+    }
+
+private:
+    const std::string m_type;
+};
 } // namespace KeegMake

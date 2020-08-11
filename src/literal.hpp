@@ -1,5 +1,7 @@
 #pragma once
 #include "exception.hpp"
+#include <memory>
+#include <utility>
 
 namespace KeegMake {
 enum class LiteralValType {
@@ -21,6 +23,11 @@ public:
         : m_type(type)
     {
     }
+
+    LiteralVal(const LiteralVal& other) = delete;
+
+    virtual std::unique_ptr<LiteralVal> clone() const = 0;
+
     [[nodiscard]] virtual std::string literal_str() const
     {
         throw WrongLiteralType(LiteralValTypeToStr(m_type));
@@ -34,7 +41,7 @@ public:
         throw WrongLiteralType(LiteralValTypeToStr(m_type));
     }
 
-    [[nodiscard]] virtual std::string repr() const { return "BaseLiteral"; }
+    [[nodiscard]] virtual std::string repr() const = 0;
 
 protected:
     const LiteralValType m_type;
@@ -46,6 +53,12 @@ public:
         : m_literal(literal)
         , LiteralVal(LiteralValType::Bool)
     {
+    }
+    BoolLiteralVal(const BoolLiteralVal& other) = delete;
+
+    std::unique_ptr<LiteralVal> clone() const override
+    {
+        return std::make_unique<BoolLiteralVal>(m_literal);
     }
 
     [[nodiscard]] std::string repr() const override
@@ -65,6 +78,13 @@ public:
     {
     }
 
+    NumberLiteralVal(const NumberLiteralVal& other) = delete;
+
+    std::unique_ptr<LiteralVal> clone() const override
+    {
+        return std::make_unique<NumberLiteralVal>(m_literal);
+    }
+
     [[nodiscard]] std::string repr() const override
     {
         return std::to_string(m_literal);
@@ -82,6 +102,13 @@ public:
     {
     }
 
+    std::unique_ptr<LiteralVal> clone() const override
+    {
+        return std::make_unique<StringLiteralVal>(m_literal);
+    }
+
+    StringLiteralVal(const StringLiteralVal& other) = delete;
+
     [[nodiscard]] std::string repr() const override { return m_literal; }
 
 private:
@@ -94,6 +121,13 @@ public:
         : LiteralVal(LiteralValType::None)
     {
     }
+
+    std::unique_ptr<LiteralVal> clone() const override
+    {
+        return std::make_unique<NoneLiteralVal>();
+    }
+
+    NoneLiteralVal(const NoneLiteralVal& other) = delete;
 
     [[nodiscard]] std::string repr() const override { return "None"; }
 };

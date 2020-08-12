@@ -12,9 +12,13 @@ include(cmake/ClangTidy.cmake)
 
 option(ENABLE_COLOR "Enable colors in the output of all possible tools" ON)
 
-if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL
+                                              "Clang"
+)
 
-    set(KEEGMAKE_CXX_FLAGS_WARNING "-Wall;-Wextra;-Werror;-Wno-unused-private-field")
+    set(KEEGMAKE_CXX_FLAGS_WARNING
+        "-Wall;-Wextra;-Werror;-Wno-unused-private-field"
+    )
     set(KEEGMAKE_CXX_FLAGS_OPTIMIZATION "-Og;-g")
     set(KEEGMAKE_CXX_FLAGS_TEST "--coverage")
     set(KEEGMAKE_CXX_FLAGS_OTHERS "")
@@ -36,13 +40,19 @@ endif()
 # Always enable compile_commands.json generation
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_custom_target(gen_ast COMMAND ${CMAKE_SOURCE_DIR}/tools/astGen.py ${CMAKE_BINARY_DIR}/include BYPRODUCTS "${CMAKE_BINARY_DIR}/include/expr_ast.hpp")
+add_custom_target(
+    gen_ast
+    COMMENT "Generating AST Source files"
+    COMMAND ${CMAKE_SOURCE_DIR}/tools/astGen.py ${CMAKE_BINARY_DIR}/include
+    BYPRODUCTS "${CMAKE_BINARY_DIR}/include/expr_ast.hpp"
+)
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/include")
 add_library(ast INTERFACE)
 add_dependencies(ast gen_ast)
 target_include_directories(ast INTERFACE "${CMAKE_BINARY_DIR}/include")
 
-add_executable(main
+add_executable(
+    main
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/application.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ast_visitor.cpp
@@ -55,7 +65,11 @@ add_executable(main
 )
 target_link_libraries(main spdlog::spdlog ast)
 target_compile_features(main PRIVATE cxx_std_17)
-target_compile_options(main PRIVATE ${KEEGMAKE_CXX_FLAGS_WARNING} ${KEEGMAKE_CXX_FLAGS_OPTIMIZATION} ${KEEGMAKE_CXX_FLAGS_OTHERS})
+target_compile_options(
+    main
+    PRIVATE ${KEEGMAKE_CXX_FLAGS_WARNING} ${KEEGMAKE_CXX_FLAGS_OPTIMIZATION}
+            ${KEEGMAKE_CXX_FLAGS_OTHERS}
+)
 target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/src")
 clangtidy_addtarget(main)
 

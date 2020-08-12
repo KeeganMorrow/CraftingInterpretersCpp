@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 
-#include "environment.hpp"
+#include "interpreter.hpp"
 
 namespace KeegMake
 {
@@ -10,14 +10,23 @@ class Application
 {
 public:
     Application(std::vector<std::string>&& args) : m_args(std::move(args)) {}
-    int run();
+    int start();
 
     // Delete undesired constructors (Allow move, not copy or assign)
     Application(const Application&) = delete;
     Application& operator=(const Application&) = delete;
 
+    int run(const std::string& source);
+    int runFile(const std::string& filepath);
+    int runPrompt();
+
+    static void error(int line, const std::string& message);
+    static void runtimeError(const RuntimeError& error);
+    static void report(int line, const std::string& where, const std::string& message);
+
+
 private:
+    bool m_hadError{false};
     const std::vector<std::string> m_args;
-    Environment m_environment;
 };
 }  // namespace KeegMake

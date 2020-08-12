@@ -1,10 +1,7 @@
 #include "scanner.hpp"
-
 #include <spdlog/spdlog.h>
-
 #include <string>
-
-#include "environment.hpp"
+#include "application.hpp"
 
 namespace KeegMake
 {
@@ -109,7 +106,7 @@ void Scanner::scanToken()
         }
         else
         {
-            Environment::error(m_line, "Unexpected character");
+            Application::error(m_line, "Unexpected character");
         }
         break;
     }
@@ -201,7 +198,7 @@ void Scanner::string()
 
     if (isAtEnd())
     {
-        Environment::error(m_line, "Unterminated string");
+        Application::error(m_line, "Unterminated string");
         return;
     }
 

@@ -46,7 +46,6 @@ add_executable(main
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/application.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ast_visitor.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/environment.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/exception.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/expressions.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/interpreter.cpp

@@ -23,5 +23,5 @@ int main(int argc, char* argv[])
         args.emplace_back(argv[i]);
     }
     KeegMake::Application application(std::move(args));
-    return application.run();
+    return application.start();
 }

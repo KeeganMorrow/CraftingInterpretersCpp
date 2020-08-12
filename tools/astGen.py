@@ -24,18 +24,22 @@ class Field:
 
 
 class Class:
-    def __init__(self, name, fields):
+    def __init__(self, name, fields, basename):
         self.name = name
         self.fields = fields
+        self.basename = basename
 
     def __repr__(self):
         return '{{name: {}, fields: {} }}'.format(self.name, self.fields)
 
+    def className(self):
+        return '{}{}'.format(self.basename, self.name)
+
     def visitor_function_name(self):
-        return "visit{}".format(self.name)
+        return "visit{}".format(self.className())
 
     def reference_type(self):
-        return "const {}&".format(self.name)
+        return "const {}&".format(self.className())
 
 
 class ReturnType:
@@ -52,7 +56,7 @@ class ReturnType:
         return "[[nodiscard]] virtual"
 
 
-def parseFields(types):
+def parseFields(types, basename):
     classes = []
     for type in types:
         print("Looking at class {}".format(type))
@@ -63,7 +67,7 @@ def parseFields(types):
             name = field.split(" ")[1]
             type = field.split(" ")[0]
             fields.append(Field(name, type))
-        classes.append(Class(classname, fields))
+        classes.append(Class(classname, fields, basename))
     import pprint
     pprint.pprint(classes)
 
@@ -109,7 +113,7 @@ class Writer:
 
 def defineVisitor(w, basename, returntypes, types):
     for returntype in returntypes:
-        w.write("class Visitor{} {{".format(returntype.name))
+        w.write("class {}Visitor{} {{".format(basename, returntype.name))
         w.write("public:")
         w.increase()
         if "void" in returntype.type:
@@ -132,7 +136,7 @@ def defineVisitor(w, basename, returntypes, types):
 
 
 def defineType(w, basename, type, returntypes):
-    w.write("class {} : public {} {{".format(type.name, basename))
+    w.write("class {} : public {} {{".format(type.className(), basename))
     w.write("public:")
     w.increase()
 
@@ -142,8 +146,9 @@ def defineType(w, basename, type, returntypes):
         else:
             qualifiers = "[[nodiscard]]"
         w.write(
-            "{qualifiers} {type} accept(const Visitor{name} &visitor) const override {{"
-            .format(qualifiers=qualifiers,
+            "{qualifiers} {type} accept(const {basename}Visitor{name} &visitor) const override {{"
+            .format(basename=basename,
+                    qualifiers=qualifiers,
                     type=returntype.type,
                     name=returntype.name))
         w.increase()
@@ -160,7 +165,7 @@ def defineType(w, basename, type, returntypes):
     if typed_fields[-1] == ',':
         typed_fields = typed_fields[:-1]
 
-    w.write("{}({}):".format(type.name, typed_fields))
+    w.write("{}({}):".format(type.className(), typed_fields))
     w.increase()
     for field in type.fields:
         if field is type.fields[-1]:
@@ -173,7 +178,7 @@ def defineType(w, basename, type, returntypes):
     w.decrease()
     w.write("")
     # Virtual destructor
-    w.write("~{}() override = default;".format(type.name))
+    w.write("~{}() override = default;".format(type.className()))
 
     for field in type.fields:
         w.write(
@@ -200,10 +205,9 @@ def defineAst(outputdir, fileheader, filename, basename, types, returntypes):
             w.write(line)
         w.write("")
         w.write("namespace KeegMake {")
-        w.write("namespace {} {{".format(basename))
         w.write("")
         for type in types:
-            w.write("class {};".format(type.name))
+            w.write("class {};".format(type.className()))
         w.write("")
         defineVisitor(w, basename, returntypes, types)
         w.write("")
@@ -217,8 +221,8 @@ def defineAst(outputdir, fileheader, filename, basename, types, returntypes):
                 qualifiers = "virtual"
             else:
                 qualifiers = "[[nodiscard]] virtual"
-            w.write("{} {} accept(const Visitor{}&) const = 0;".format(
-                qualifiers, returntype.type, returntype.name))
+            w.write("{} {} accept(const {}Visitor{}&) const = 0;".format(
+                qualifiers, returntype.type, basename, returntype.name))
         w.decrease()
         w.write("};")
         w.write("")
@@ -226,7 +230,6 @@ def defineAst(outputdir, fileheader, filename, basename, types, returntypes):
         for type in types:
             defineType(w, basename, type, returntypes)
 
-        w.write("}} //namespace {}".format(basename))
         w.write("} //namespace KeegMake")
 
 
@@ -237,13 +240,16 @@ def main():
     print("Output directory is {}".format(args.output_directory))
     expression_types = [
         "Binary | Expression left, Token token, Expression right",
-        "Grouping | Expression expression", "Literal | LiteralVal value",
-        "Unary | Token token, Expression right"
+        "Grouping | Expression expression",
+        "Literal | LiteralVal value",
+        "Unary | Token token, Expression right",
+        "Variable | Token name",
     ]
     # TODO: This is some really gross stuff going on here in the organization
     statement_types = [
-        "Expression | KeegMake::Expression::Expression expression left",
-        "Print | KeegMake::Expression::Expression expression",
+        "Expression | Expression expression left",
+        "Print | Expression expression",
+        "Variable | Token name, Expression expression",
     ]
     visitor_returns = [
         ReturnType("Void", "void"),
@@ -258,11 +264,15 @@ def main():
         "#include \"token.hpp\"",
         "#include <memory>",
     ]
+    basename_expression = "Expression"
+    basename_statement = "Statement"
     defineAst(args.output_directory, file_header, 'expression_ast',
-              'Expression', parseFields(expression_types), visitor_returns)
+              'Expression', parseFields(expression_types,
+                                        basename_expression), visitor_returns)
     file_header.insert(3, '#include "expression_ast.hpp"')
     defineAst(args.output_directory, file_header, 'statement_ast', 'Statement',
-              parseFields(statement_types), visitor_returns)
+              parseFields(statement_types, basename_statement),
+              visitor_returns)
     return 0
 
 

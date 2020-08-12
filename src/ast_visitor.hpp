@@ -6,20 +6,23 @@
 
 namespace KeegMake
 {
-class AstPrinter : public Expression::VisitorString
+class AstPrinter : public ExpressionVisitorString
 {
 public:
-    std::string print(const Expression::Expression& expr) { return expr.accept(*this); }
+    std::string print(const Expression& expr) { return expr.accept(*this); }
 
-    [[nodiscard]] std::string visitBinary(const Expression::Binary& expression) const override;
-    [[nodiscard]] std::string visitGrouping(const Expression::Grouping& expression) const override;
-    [[nodiscard]] std::string visitLiteral(const Expression::Literal& expression) const override;
-    [[nodiscard]] std::string visitUnary(const Expression::Unary& expression) const override;
+    [[nodiscard]] std::string visitExpressionBinary(
+        const ExpressionBinary& expression) const override;
+    [[nodiscard]] std::string visitExpressionGrouping(
+        const ExpressionGrouping& expression) const override;
+    [[nodiscard]] std::string visitExpressionLiteral(
+        const ExpressionLiteral& expression) const override;
+    [[nodiscard]] std::string visitExpressionUnary(
+        const ExpressionUnary& expression) const override;
 
 private:
-    [[nodiscard]] std::string parenthesize(
-        const std::string& name,
-        const std::vector<const Expression::Expression*>& expressions) const;
+    [[nodiscard]] std::string parenthesize(const std::string& name,
+                                           const std::vector<const Expression*>& expressions) const;
 };
 
 }  // namespace KeegMake

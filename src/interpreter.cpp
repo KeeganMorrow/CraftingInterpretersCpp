@@ -3,14 +3,14 @@
 #include <spdlog/spdlog.h>
 namespace KeegMake
 {
-std::unique_ptr<LiteralVal> Interpreter::evaluate(const Expression::Expression& expression) const
+std::unique_ptr<LiteralVal> Interpreter::evaluate(const Expression& expression) const
 {
     (void)expression;
 
     return expression.accept(*this);
 }
 
-void Interpreter::interpret(std::vector<std::unique_ptr<const Statement::Statement>>&& program)
+void Interpreter::interpret(std::vector<std::unique_ptr<const Statement>>&& program)
 {
     try
     {
@@ -23,17 +23,24 @@ void Interpreter::interpret(std::vector<std::unique_ptr<const Statement::Stateme
     {
     }
 }
-void Interpreter::visitExpression(const Statement::Expression& statement) const
+void Interpreter::visitStatementExpression(const StatementExpression& statement) const
 {
     (void)evaluate(statement.expression());
 }
 
-void Interpreter::visitPrint(const Statement::Print& statement) const
+void Interpreter::visitStatementPrint(const StatementPrint& statement) const
 {
     auto value = evaluate(statement.expression());
     spdlog::info(value->repr());
 }
-std::unique_ptr<LiteralVal> Interpreter::visitBinary(const Expression::Binary& expression) const
+
+void Interpreter::visitStatementVariable(const StatementVariable& statement) const
+{
+    (void)statement;
+    return;
+}
+std::unique_ptr<LiteralVal> Interpreter::visitExpressionBinary(
+    const ExpressionBinary& expression) const
 {
     auto right = evaluate(expression.right());
     auto left = evaluate(expression.left());
@@ -108,18 +115,21 @@ std::unique_ptr<LiteralVal> Interpreter::visitBinary(const Expression::Binary& e
     return nullptr;
 }
 
-std::unique_ptr<LiteralVal> Interpreter::visitGrouping(const Expression::Grouping& expression) const
+std::unique_ptr<LiteralVal> Interpreter::visitExpressionGrouping(
+    const ExpressionGrouping& expression) const
 {
     return evaluate(expression.expression());
 }
 
-std::unique_ptr<LiteralVal> Interpreter::visitLiteral(const Expression::Literal& expression) const
+std::unique_ptr<LiteralVal> Interpreter::visitExpressionLiteral(
+    const ExpressionLiteral& expression) const
 {
     // TODO : Check against nullptr. Not sure what to do if we see one at the moment
     return std::make_unique<LiteralVal>(expression.value());
 }
 
-std::unique_ptr<LiteralVal> Interpreter::visitUnary(const Expression::Unary& expression) const
+std::unique_ptr<LiteralVal> Interpreter::visitExpressionUnary(
+    const ExpressionUnary& expression) const
 {
     auto right = evaluate(expression.right());
 
@@ -136,7 +146,14 @@ std::unique_ptr<LiteralVal> Interpreter::visitUnary(const Expression::Unary& exp
 
     return nullptr;
 }
-[[nodiscard]] std::unique_ptr<LiteralVal> Interpreter::isTruthy(const LiteralVal& lval)
+
+std::unique_ptr<LiteralVal> Interpreter::visitExpressionVariable(
+    const ExpressionVariable& expression) const
+{
+    (void)expression;
+    return nullptr;
+}
+std::unique_ptr<LiteralVal> Interpreter::isTruthy(const LiteralVal& lval)
 {
     bool result = true;
     if (lval.type() == LiteralValType::Nil)

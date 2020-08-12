@@ -14,23 +14,23 @@ class Parser
 public:
     Parser(std::vector<Token>&& tokens) : m_tokens(tokens) {}
 
-    std::vector<std::unique_ptr<const Statement::Statement>> parse();
+    std::vector<std::unique_ptr<const Statement>> parse();
 
 private:
     void synchronize();
 
-    std::unique_ptr<Statement::Statement> statement();
-    std::unique_ptr<Statement::Statement> printStatement();
-    std::unique_ptr<Statement::Statement> expressionStatement();
+    std::unique_ptr<Statement> statement();
+    std::unique_ptr<Statement> printStatement();
+    std::unique_ptr<Statement> expressionStatement();
 
-    std::unique_ptr<Expression::Expression> expression();
+    std::unique_ptr<Expression> expression();
 
-    std::unique_ptr<Expression::Expression> equality();
-    std::unique_ptr<Expression::Expression> comparison();
-    std::unique_ptr<Expression::Expression> addition();
-    std::unique_ptr<Expression::Expression> multiplication();
-    std::unique_ptr<Expression::Expression> unary();
-    std::unique_ptr<Expression::Expression> primary();
+    std::unique_ptr<Expression> equality();
+    std::unique_ptr<Expression> comparison();
+    std::unique_ptr<Expression> addition();
+    std::unique_ptr<Expression> multiplication();
+    std::unique_ptr<Expression> unary();
+    std::unique_ptr<Expression> primary();
     bool match(std::vector<TokenType>&& types);
     bool check(TokenType type);
 

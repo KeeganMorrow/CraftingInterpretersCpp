@@ -3,9 +3,9 @@
 #include <spdlog/spdlog.h>
 namespace KeegMake
 {
-std::vector<std::unique_ptr<const Statement::Statement>> Parser::parse()
+std::vector<std::unique_ptr<const Statement>> Parser::parse()
 {
-    std::vector<std::unique_ptr<const Statement::Statement>> statements;
+    std::vector<std::unique_ptr<const Statement>> statements;
     while (!isAtEnd())
     {
         statements.emplace_back(statement());
@@ -42,7 +42,7 @@ void Parser::synchronize()
     }
 }
 
-std::unique_ptr<Statement::Statement> Parser::statement()
+std::unique_ptr<Statement> Parser::statement()
 {
     if (match({TokenType::PRINT}))
     {
@@ -52,23 +52,23 @@ std::unique_ptr<Statement::Statement> Parser::statement()
     return expressionStatement();
 }
 
-std::unique_ptr<Statement::Statement> Parser::printStatement()
+std::unique_ptr<Statement> Parser::printStatement()
 {
     auto expr = expression();
     consume(TokenType::SEMICOLON, "Expect ';' after value.");
-    return std::make_unique<Statement::Print>(std::move(expr));
+    return std::make_unique<StatementPrint>(std::move(expr));
 }
 
-std::unique_ptr<Statement::Statement> Parser::expressionStatement()
+std::unique_ptr<Statement> Parser::expressionStatement()
 {
     auto expr = expression();
     consume(TokenType::SEMICOLON, "Expect ';' after expression.");
-    return std::make_unique<Statement::Expression>(std::move(expr));
+    return std::make_unique<StatementExpression>(std::move(expr));
 }
 
-std::unique_ptr<Expression::Expression> Parser::expression() { return equality(); }
+std::unique_ptr<Expression> Parser::expression() { return equality(); }
 
-std::unique_ptr<Expression::Expression> Parser::equality()
+std::unique_ptr<Expression> Parser::equality()
 {
     auto expr = comparison();
 
@@ -76,14 +76,14 @@ std::unique_ptr<Expression::Expression> Parser::equality()
     {
         auto oper = previous();
         auto right = comparison();
-        expr = std::make_unique<Expression::Binary>(std::move(expr), std::move(oper),
-                                                    std::move(right));
+        expr =
+            std::make_unique<ExpressionBinary>(std::move(expr), std::move(oper), std::move(right));
     }
 
     return expr;
 }
 
-std::unique_ptr<Expression::Expression> Parser::comparison()
+std::unique_ptr<Expression> Parser::comparison()
 {
     auto expr = addition();
 
@@ -92,14 +92,14 @@ std::unique_ptr<Expression::Expression> Parser::comparison()
     {
         auto oper = previous();
         auto right = addition();
-        expr = std::make_unique<Expression::Binary>(std::move(expr), std::move(oper),
-                                                    std::move(right));
+        expr =
+            std::make_unique<ExpressionBinary>(std::move(expr), std::move(oper), std::move(right));
     }
 
     return expr;
 }
 
-std::unique_ptr<Expression::Expression> Parser::addition()
+std::unique_ptr<Expression> Parser::addition()
 {
     auto expr = multiplication();
 
@@ -107,14 +107,14 @@ std::unique_ptr<Expression::Expression> Parser::addition()
     {
         auto oper = previous();
         auto right = multiplication();
-        expr = std::make_unique<Expression::Binary>(std::move(expr), std::move(oper),
-                                                    std::move(right));
+        expr =
+            std::make_unique<ExpressionBinary>(std::move(expr), std::move(oper), std::move(right));
     }
 
     return expr;
 }
 
-std::unique_ptr<Expression::Expression> Parser::multiplication()
+std::unique_ptr<Expression> Parser::multiplication()
 {
     auto expr = unary();
 
@@ -122,43 +122,43 @@ std::unique_ptr<Expression::Expression> Parser::multiplication()
     {
         auto oper = previous();
         auto right = unary();
-        expr = std::make_unique<Expression::Binary>(std::move(expr), std::move(oper),
-                                                    std::move(right));
+        expr =
+            std::make_unique<ExpressionBinary>(std::move(expr), std::move(oper), std::move(right));
     }
 
     return expr;
 }
 
-std::unique_ptr<Expression::Expression> Parser::unary()
+std::unique_ptr<Expression> Parser::unary()
 {
     if (match({TokenType::BANG, TokenType::MINUS}))
     {
         auto oper = previous();
         auto right = unary();
-        return std::make_unique<Expression::Unary>(std::move(oper), std::move(right));
+        return std::make_unique<ExpressionUnary>(std::move(oper), std::move(right));
     }
 
     return primary();
 }
 
-std::unique_ptr<Expression::Expression> Parser::primary()
+std::unique_ptr<Expression> Parser::primary()
 {
     if (match({TokenType::FALSE}))
     {
-        return std::make_unique<Expression::Literal>(std::make_unique<LiteralVal>(false));
+        return std::make_unique<ExpressionLiteral>(std::make_unique<LiteralVal>(false));
     }
     if (match({TokenType::TRUE}))
     {
-        return std::make_unique<Expression::Literal>(std::make_unique<LiteralVal>(true));
+        return std::make_unique<ExpressionLiteral>(std::make_unique<LiteralVal>(true));
     }
     if (match({TokenType::NIL}))
     {
-        return std::make_unique<Expression::Literal>(std::make_unique<LiteralVal>());
+        return std::make_unique<ExpressionLiteral>(std::make_unique<LiteralVal>());
     }
 
     if (match({TokenType::NUMBER, TokenType::STRING}))
     {
-        return std::make_unique<Expression::Literal>(
+        return std::make_unique<ExpressionLiteral>(
             std::make_unique<LiteralVal>(previous()->literal()));
     }
 
@@ -166,7 +166,7 @@ std::unique_ptr<Expression::Expression> Parser::primary()
     {
         auto expr = expression();
         consume(TokenType::RIGHT_PAREN, "Expect ')' after expression.");
-        return std::make_unique<Expression::Grouping>(std::move(expr));
+        return std::make_unique<ExpressionGrouping>(std::move(expr));
     }
 
     throw(error(peek(), "Expect expression."));

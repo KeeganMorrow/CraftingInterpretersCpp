@@ -20,31 +20,30 @@ private:
 };
 
 // TODO: Use string for now, need some kind of lox data object type
-class Interpreter : public Expression::VisitorLiteralVal, public Statement::VisitorVoid
+class Interpreter : public ExpressionVisitorLiteralVal, public StatementVisitorVoid
 {
 public:
     Interpreter() = default;
-    [[nodiscard]] std::unique_ptr<LiteralVal> evaluate(
-        const Expression::Expression& expression) const;
+    [[nodiscard]] std::unique_ptr<LiteralVal> evaluate(const Expression& expression) const;
 
-    void interpret(std::vector<std::unique_ptr<const Statement::Statement>>&& program);
+    void interpret(std::vector<std::unique_ptr<const Statement>>&& program);
 
 private:
-    void execute(std::unique_ptr<const Statement::Statement>&& statement)
-    {
-        statement->accept(*this);
-    }
-    void visitExpression(const Statement::Expression& statement) const override;
-    void visitPrint(const Statement::Print& statement) const override;
+    void execute(std::unique_ptr<const Statement>&& statement) { statement->accept(*this); }
+    void visitStatementExpression(const StatementExpression& statement) const override;
+    void visitStatementPrint(const StatementPrint& statement) const override;
+    void visitStatementVariable(const StatementVariable& statement) const override;
 
-    [[nodiscard]] std::unique_ptr<LiteralVal> visitBinary(
-        const Expression::Binary& expression) const override;
-    [[nodiscard]] std::unique_ptr<LiteralVal> visitGrouping(
-        const Expression::Grouping& expression) const override;
-    [[nodiscard]] std::unique_ptr<LiteralVal> visitLiteral(
-        const Expression::Literal& expression) const override;
-    [[nodiscard]] std::unique_ptr<LiteralVal> visitUnary(
-        const Expression::Unary& expression) const override;
+    [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionBinary(
+        const ExpressionBinary& expression) const override;
+    [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionGrouping(
+        const ExpressionGrouping& expression) const override;
+    [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionLiteral(
+        const ExpressionLiteral& expression) const override;
+    [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionUnary(
+        const ExpressionUnary& expression) const override;
+    [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionVariable(
+        const ExpressionVariable& expression) const override;
 
     [[nodiscard]] static std::unique_ptr<LiteralVal> isTruthy(const LiteralVal& lval);
 

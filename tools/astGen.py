@@ -3,6 +3,7 @@ import sys
 import argparse
 import os
 
+
 class Field:
     def __init__(self, identifier, type):
         self.identifier = identifier
@@ -19,6 +20,7 @@ class Field:
 
     def member_name(self):
         return "m_{}".format(str.lower(self.identifier))
+
 
 class Class:
     def __init__(self, name, fields):
@@ -44,8 +46,6 @@ class ReturnType:
         return str.lower(self.name)
 
 
-
-
 def parseFields(types):
     classes = []
     for type in types:
@@ -63,6 +63,7 @@ def parseFields(types):
 
     return classes
 
+
 def defineVisitor(f, basename, returntypes, types):
     def writeline(line):
         f.write(line + '\n')
@@ -72,15 +73,15 @@ def defineVisitor(f, basename, returntypes, types):
         writeline("    public:")
         for type in types:
             writeline(
-                "       virtual {returntype} {visitor_function_name}({typename} {basename_lower}) const = 0;".
-                format(returntype=returntype.type,
-                       visitor_function_name=type.visitor_function_name(),
-                       typename=type.reference_type(),
-                       basename_lower=basename.lower()))
+                "       virtual {returntype} {visitor_function_name}({typename} {basename_lower}) const = 0;"
+                .format(returntype=returntype.type,
+                        visitor_function_name=type.visitor_function_name(),
+                        typename=type.reference_type(),
+                        basename_lower=basename.lower()))
 
         writeline("    };")
-        writeline(
-            "    virtual {} accept(const Visitor{}&) const = 0;".format(returntype.type, returntype.name))
+        writeline("    virtual {} accept(const Visitor{}&) const = 0;".format(
+            returntype.type, returntype.name))
 
 
 def defineType(f, basename, type, returntypes):
@@ -91,13 +92,17 @@ def defineType(f, basename, type, returntypes):
     writeline("public:")
 
     for returntype in returntypes:
-        writeline("    virtual {type} accept(const Visitor{name} &visitor) const override {{".format(type=returntype.type, name=returntype.name))
-        writeline("        return visitor.{}(*this);".format(type.visitor_function_name()))
+        writeline(
+            "    virtual {type} accept(const Visitor{name} &visitor) const override {{"
+            .format(type=returntype.type, name=returntype.name))
+        writeline("        return visitor.{}(*this);".format(
+            type.visitor_function_name()))
         writeline("    }")
 
     typed_fields = ""
     for field in type.fields:
-        typed_fields = typed_fields + "{type} &&{name},".format(type=field.member_type(),name=field.identifier)
+        typed_fields = typed_fields + "{type} &&{name},".format(
+            type=field.member_type(), name=field.identifier)
     if typed_fields[-1] == ',':
         typed_fields = typed_fields[:-1]
 
@@ -107,18 +112,25 @@ def defineType(f, basename, type, returntypes):
             lineending = '{}'
         else:
             lineending = ','
-        writeline("    {}(std::move({})){}".format(field.member_name(), field.identifier, lineending))
+        writeline("    {}(std::move({})){}".format(field.member_name(),
+                                                   field.identifier,
+                                                   lineending))
 
     # Virtual destructor
     writeline("   virtual ~{}() = default;".format(type.name))
 
     for field in type.fields:
-        writeline("   virtual const {type} &{identifier}() const{{ return *({member_name}.get()); }}".format(type=field.type, identifier=field.identifier, member_name=field.member_name()))
+        writeline(
+            "   virtual const {type} &{identifier}() const{{ return *({member_name}.get()); }}"
+            .format(type=field.type,
+                    identifier=field.identifier,
+                    member_name=field.member_name()))
 
     writeline("private:")
 
     for field in type.fields:
-        writeline("    {type} {name};".format(type=field.member_type(), name=field.member_name()))
+        writeline("    {type} {name};".format(type=field.member_type(),
+                                              name=field.member_name()))
 
     writeline("};")
 
@@ -166,9 +178,13 @@ def main():
         "Grouping : Expression expression", "Literal : LiteralVal value",
         "Unary : Token token, Expression right"
     ]
-    returntypes = [ReturnType("String","std::string"), ReturnType("LiteralVal", "std::unique_ptr<LiteralVal>")]
+    returntypes = [
+        ReturnType("String", "std::string"),
+        ReturnType("LiteralVal", "std::unique_ptr<LiteralVal>")
+    ]
     parsed_types = parseFields(types)
-    defineAst(args.output_directory, 'expression_ast', 'Expression', parsed_types, returntypes)
+    defineAst(args.output_directory, 'expression_ast', 'Expression',
+              parsed_types, returntypes)
     return 0
 
 

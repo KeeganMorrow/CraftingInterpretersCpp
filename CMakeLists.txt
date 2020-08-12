@@ -40,12 +40,18 @@ endif()
 # Always enable compile_commands.json generation
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+set(AST_HEADERS
+    "${CMAKE_BINARY_DIR}/include/expression_ast.hpp"
+    "${CMAKE_BINARY_DIR}/include/statement_ast.hpp"
+    )
+
 add_custom_target(
     gen_ast
-    COMMENT "Generating AST Source files"
     COMMAND ${CMAKE_SOURCE_DIR}/tools/astGen.py ${CMAKE_BINARY_DIR}/include
-    BYPRODUCTS "${CMAKE_BINARY_DIR}/include/expr_ast.hpp"
+    BYPRODUCTS ${AST_HEADERS}
 )
+# Hook to run clang format on the gen_ast files as soon as they are generated
+clangformat_run_post(TARGET gen_ast FILES ${AST_HEADERS})
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/include")
 add_library(ast INTERFACE)
 add_dependencies(ast gen_ast)
@@ -73,4 +79,7 @@ target_compile_options(
 target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/src")
 clangtidy_addtarget(main)
 
-clangformat_globfiles()
+clangformat_globfiles(
+    DIRECTORIES ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/test
+    ${CMAKE_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/include
+)

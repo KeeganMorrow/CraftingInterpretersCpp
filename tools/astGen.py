@@ -2,6 +2,7 @@
 import sys
 import argparse
 import os
+import datetime
 
 
 class Field:
@@ -45,13 +46,18 @@ class ReturnType:
     def field_name(self):
         return str.lower(self.name)
 
+    def qualifiers(self):
+        if "void" in self.type:
+            return "virtual"
+        return "[[nodiscard]] virtual"
+
 
 def parseFields(types):
     classes = []
     for type in types:
         print("Looking at class {}".format(type))
-        classname = type.split(":")[0].strip()
-        strfields = type.split(":")[1].strip()
+        classname = type.split("|")[0].strip()
+        strfields = type.split("|")[1].strip()
         fields = []
         for field in strfields.split(", "):
             name = field.split(" ")[1]
@@ -106,10 +112,16 @@ def defineVisitor(w, basename, returntypes, types):
         w.write("class Visitor{} {{".format(returntype.name))
         w.write("public:")
         w.increase()
+        if "void" in returntype.type:
+            qualifiers = "virtual"
+        else:
+            qualifiers = "[[nodiscard]] virtual"
         for type in types:
+
             w.write(
-                "[[nodiscard]] virtual {returntype} {visitor_function_name}({typename} {basename_lower}) const = 0;"
-                .format(returntype=returntype.type,
+                "{qualifiers} {returntype} {visitor_function_name}({typename} {basename_lower}) const = 0;"
+                .format(qualifiers=qualifiers,
+                        returntype=returntype.type,
                         visitor_function_name=type.visitor_function_name(),
                         typename=type.reference_type(),
                         basename_lower=basename.lower()))
@@ -125,9 +137,15 @@ def defineType(w, basename, type, returntypes):
     w.increase()
 
     for returntype in returntypes:
+        if "void" in returntype.type:
+            qualifiers = ""
+        else:
+            qualifiers = "[[nodiscard]]"
         w.write(
-            "[[nodiscard]] {type} accept(const Visitor{name} &visitor) const override {{"
-            .format(type=returntype.type, name=returntype.name))
+            "{qualifiers} {type} accept(const Visitor{name} &visitor) const override {{"
+            .format(qualifiers=qualifiers,
+                    type=returntype.type,
+                    name=returntype.name))
         w.increase()
         w.write("return visitor.{}(*this);".format(
             type.visitor_function_name()))
@@ -175,13 +193,11 @@ def defineType(w, basename, type, returntypes):
     w.write("};")
 
 
-def defineAst(outputdir, filename, basename, types, returntypes):
+def defineAst(outputdir, fileheader, filename, basename, types, returntypes):
     path = os.path.join(outputdir, filename + ".hpp")
     with Writer(path) as w:
-        w.write("#pragma once")
-        w.write("#include \"literal.hpp\"")
-        w.write("#include \"token.hpp\"")
-        w.write("#include <memory>")
+        for line in fileheader:
+            w.write(line)
         w.write("")
         w.write("namespace KeegMake {")
         w.write("namespace {} {{".format(basename))
@@ -197,9 +213,12 @@ def defineAst(outputdir, filename, basename, types, returntypes):
         w.write("virtual ~{}() = default;".format(basename))
         w.write("")
         for returntype in returntypes:
-            w.write(
-                "[[nodiscard]] virtual {} accept(const Visitor{}&) const = 0;".
-                format(returntype.type, returntype.name))
+            if "void" in returntype.type:
+                qualifiers = "virtual"
+            else:
+                qualifiers = "[[nodiscard]] virtual"
+            w.write("{} {} accept(const Visitor{}&) const = 0;".format(
+                qualifiers, returntype.type, returntype.name))
         w.decrease()
         w.write("};")
         w.write("")
@@ -217,21 +236,32 @@ def main():
     args = parser.parse_args()
     print("Output directory is {}".format(args.output_directory))
     expression_types = [
-        "Binary : Expression left, Token token, Expression right",
-        "Grouping : Expression expression", "Literal : LiteralVal value",
-        "Unary : Token token, Expression right"
+        "Binary | Expression left, Token token, Expression right",
+        "Grouping | Expression expression", "Literal | LiteralVal value",
+        "Unary | Token token, Expression right"
     ]
+    # TODO: This is some really gross stuff going on here in the organization
     statement_types = [
-        "Expression : Expression expression left",
-        "Print : Expression expression",
+        "Expression | KeegMake::Expression::Expression expression left",
+        "Print | KeegMake::Expression::Expression expression",
     ]
     visitor_returns = [
+        ReturnType("Void", "void"),
         ReturnType("String", "std::string"),
         ReturnType("LiteralVal", "std::unique_ptr<LiteralVal>")
     ]
-    defineAst(args.output_directory, 'expression_ast', 'Expression',
-              parseFields(expression_types), visitor_returns)
-    defineAst(args.output_directory, 'statement_ast', 'Statement',
+    file_header = [
+        "#pragma once",
+        "// This file generated by tools/astGen.py at {}".format(
+            datetime.datetime.now().isoformat()),
+        "#include \"literal.hpp\"",
+        "#include \"token.hpp\"",
+        "#include <memory>",
+    ]
+    defineAst(args.output_directory, file_header, 'expression_ast',
+              'Expression', parseFields(expression_types), visitor_returns)
+    file_header.insert(3, '#include "expression_ast.hpp"')
+    defineAst(args.output_directory, file_header, 'statement_ast', 'Statement',
               parseFields(statement_types), visitor_returns)
     return 0
 

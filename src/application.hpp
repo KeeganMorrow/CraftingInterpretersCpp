@@ -24,7 +24,6 @@ public:
     static void runtimeError(const RuntimeError& error);
     static void report(int line, const std::string& where, const std::string& message);
 
-
 private:
     bool m_hadError{false};
     const std::vector<std::string> m_args;

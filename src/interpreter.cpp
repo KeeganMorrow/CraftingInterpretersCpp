@@ -10,6 +10,29 @@ std::unique_ptr<LiteralVal> Interpreter::evaluate(const Expression::Expression& 
     return expression.accept(*this);
 }
 
+void Interpreter::interpret(std::vector<std::unique_ptr<const Statement::Statement>>&& program)
+{
+    try
+    {
+        for (auto& statement : program)
+        {
+            execute(std::move(statement));
+        }
+    }
+    catch (RuntimeError& error)
+    {
+    }
+}
+void Interpreter::visitExpression(const Statement::Expression& statement) const
+{
+    (void)evaluate(statement.expression());
+}
+
+void Interpreter::visitPrint(const Statement::Print& statement) const
+{
+    auto value = evaluate(statement.expression());
+    spdlog::info(value->repr());
+}
 std::unique_ptr<LiteralVal> Interpreter::visitBinary(const Expression::Binary& expression) const
 {
     auto right = evaluate(expression.right());

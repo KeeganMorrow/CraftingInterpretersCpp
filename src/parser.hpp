@@ -2,9 +2,9 @@
 #include <expressions.hpp>
 #include <memory>
 #include <vector>
+
 #include "expression_ast.hpp"
 #include "statement_ast.hpp"
-#include "parser.hpp"
 #include "token.hpp"
 
 namespace KeegMake
@@ -14,10 +14,14 @@ class Parser
 public:
     Parser(std::vector<Token>&& tokens) : m_tokens(tokens) {}
 
-    std::unique_ptr<Expression::Expression> parse();
+    std::vector<std::unique_ptr<const Statement::Statement>> parse();
 
 private:
     void synchronize();
+
+    std::unique_ptr<Statement::Statement> statement();
+    std::unique_ptr<Statement::Statement> printStatement();
+    std::unique_ptr<Statement::Statement> expressionStatement();
 
     std::unique_ptr<Expression::Expression> expression();
 
@@ -30,14 +34,13 @@ private:
     bool match(std::vector<TokenType>&& types);
     bool check(TokenType type);
 
-    bool isAtEnd();
+    bool isAtEnd() const;
     std::unique_ptr<Token> advance();
-    std::unique_ptr<Token> peek();
-    std::unique_ptr<Token> previous();
+    [[nodiscard]] std::unique_ptr<Token> peek() const;
+    [[nodiscard]] std::unique_ptr<Token> previous() const;
+    std::unique_ptr<Token> consume(TokenType type, const std::string& message);
 
     static ParseError error(std::unique_ptr<Token> token, const std::string& message);
-
-    std::unique_ptr<Token> consume(TokenType type, const std::string& message);
 
     const std::vector<Token> m_tokens;
     int m_current = 0;

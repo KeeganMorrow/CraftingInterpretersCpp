@@ -3,18 +3,16 @@
 #include <spdlog/spdlog.h>
 namespace KeegMake
 {
-std::unique_ptr<Expression::Expression> Parser::parse()
+std::vector<std::unique_ptr<const Statement::Statement>> Parser::parse()
 {
-    try
+    std::vector<std::unique_ptr<const Statement::Statement>> statements;
+    while (!isAtEnd())
     {
-        return expression();
+        statements.emplace_back(statement());
     }
-    catch (ParseError& error)
-    {
-        spdlog::error("Parse error encountered {}", error.what());
-        return nullptr;
-    }
+    return statements;
 }
+
 void Parser::synchronize()
 {
     advance();
@@ -42,6 +40,30 @@ void Parser::synchronize()
         }
         advance();
     }
+}
+
+std::unique_ptr<Statement::Statement> Parser::statement()
+{
+    if (match({TokenType::PRINT}))
+    {
+        return printStatement();
+    }
+
+    return expressionStatement();
+}
+
+std::unique_ptr<Statement::Statement> Parser::printStatement()
+{
+    auto expr = expression();
+    consume(TokenType::SEMICOLON, "Expect ';' after value.");
+    return std::make_unique<Statement::Print>(std::move(expr));
+}
+
+std::unique_ptr<Statement::Statement> Parser::expressionStatement()
+{
+    auto expr = expression();
+    consume(TokenType::SEMICOLON, "Expect ';' after expression.");
+    return std::make_unique<Statement::Expression>(std::move(expr));
 }
 
 std::unique_ptr<Expression::Expression> Parser::expression() { return equality(); }
@@ -180,11 +202,14 @@ std::unique_ptr<Token> Parser::advance()
     return previous();
 }
 
-bool Parser::isAtEnd() { return peek()->type() == TokenType::END_OF_FILE; }
+bool Parser::isAtEnd() const { return peek()->type() == TokenType::END_OF_FILE; }
 
-std::unique_ptr<Token> Parser::peek() { return std::make_unique<Token>(m_tokens.at(m_current)); }
+std::unique_ptr<Token> Parser::peek() const
+{
+    return std::make_unique<Token>(m_tokens.at(m_current));
+}
 
-std::unique_ptr<Token> Parser::previous()
+std::unique_ptr<Token> Parser::previous() const
 {
     return std::make_unique<Token>(m_tokens.at(m_current - 1));
 }

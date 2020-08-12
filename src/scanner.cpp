@@ -1,6 +1,9 @@
 #include "scanner.hpp"
+
 #include <spdlog/spdlog.h>
+
 #include <string>
+
 #include "application.hpp"
 
 namespace KeegMake

@@ -1,8 +1,4 @@
 #include "application.hpp"
-#include "exception.hpp"
-#include "scanner.hpp"
-#include "ast_visitor.hpp"
-#include "parser.hpp"
 
 #include <spdlog/spdlog.h>
 
@@ -10,9 +6,13 @@
 #include <fstream>
 #include <iostream>
 
+#include "ast_visitor.hpp"
+#include "exception.hpp"
+#include "parser.hpp"
+#include "scanner.hpp"
+
 namespace KeegMake
 {
-
 const int EXIT_RESULT_OK = 0;
 const int EXIT_RESULT_PARSE_ERROR = 1;
 
@@ -36,7 +36,6 @@ int Application::start()
     return status;
 }
 
-
 int Application::run(const std::string& source)
 {
     int result{EXIT_RESULT_OK};
@@ -49,8 +48,11 @@ int Application::run(const std::string& source)
     }
 
     Parser parser(std::move(tokens));
-    auto expression = parser.parse();
-    if (expression)
+    auto program = parser.parse();
+    Interpreter interpreter{};
+    interpreter.interpret(std::move(program));
+#if 0
+    if (program)
     {
         spdlog::info("{}", AstPrinter().print(*expression));
         try
@@ -76,10 +78,10 @@ int Application::run(const std::string& source)
         spdlog::warn("No valid expression after parsing, see previous output");
         result = EXIT_RESULT_PARSE_ERROR;
     }
+#endif  // 0
 
     return result;
 }
-
 
 int Application::runPrompt()
 {

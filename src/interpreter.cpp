@@ -3,14 +3,14 @@
 #include <spdlog/spdlog.h>
 namespace KeegMake
 {
-std::unique_ptr<LiteralVal> Interpreter::evaluate(const Expression& expression) const
+std::unique_ptr<LiteralVal> Interpreter::evaluate(const Expression::Expression& expression) const
 {
     (void)expression;
 
     return expression.accept(*this);
 }
 
-std::unique_ptr<LiteralVal> Interpreter::visitBinary(const Binary& expression) const
+std::unique_ptr<LiteralVal> Interpreter::visitBinary(const Expression::Binary& expression) const
 {
     auto right = evaluate(expression.right());
     auto left = evaluate(expression.left());
@@ -85,18 +85,18 @@ std::unique_ptr<LiteralVal> Interpreter::visitBinary(const Binary& expression) c
     return nullptr;
 }
 
-std::unique_ptr<LiteralVal> Interpreter::visitGrouping(const Grouping& expression) const
+std::unique_ptr<LiteralVal> Interpreter::visitGrouping(const Expression::Grouping& expression) const
 {
     return evaluate(expression.expression());
 }
 
-std::unique_ptr<LiteralVal> Interpreter::visitLiteral(const Literal& expression) const
+std::unique_ptr<LiteralVal> Interpreter::visitLiteral(const Expression::Literal& expression) const
 {
     // TODO : Check against nullptr. Not sure what to do if we see one at the moment
     return std::make_unique<LiteralVal>(expression.value());
 }
 
-std::unique_ptr<LiteralVal> Interpreter::visitUnary(const Unary& expression) const
+std::unique_ptr<LiteralVal> Interpreter::visitUnary(const Expression::Unary& expression) const
 {
     auto right = evaluate(expression.right());
 

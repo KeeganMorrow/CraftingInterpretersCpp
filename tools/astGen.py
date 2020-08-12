@@ -3,6 +3,7 @@ import sys
 import argparse
 import os
 
+
 class Field:
     def __init__(self, identifier, type):
         self.identifier = identifier
@@ -62,8 +63,8 @@ def parseFields(types):
 
     return classes
 
-class Writer:
 
+class Writer:
     def __init__(self, filepath, indentspaces=4):
         self.filepath = filepath
         self.file = None
@@ -94,9 +95,11 @@ class Writer:
 
     def write(self, line):
         if line:
-            self.file.write("{}{}\n".format(self.indentlevel * self.indentspaces * ' ', line))
+            self.file.write("{}{}\n".format(
+                self.indentlevel * self.indentspaces * ' ', line))
         else:
             self.file.write('\n')
+
 
 def defineVisitor(w, basename, returntypes, types):
     for returntype in returntypes:
@@ -113,9 +116,6 @@ def defineVisitor(w, basename, returntypes, types):
 
         w.decrease()
         w.write("};")
-        w.write("")
-        w.write("[[nodiscard]] virtual {} accept(const Visitor{}&) const = 0;".format(
-            returntype.type, returntype.name))
         w.write("")
 
 
@@ -150,8 +150,7 @@ def defineType(w, basename, type, returntypes):
         else:
             lineending = ','
         w.write("{}(std::move({})){}".format(field.member_name(),
-                                                   field.identifier,
-                                                   lineending))
+                                             field.identifier, lineending))
 
     w.decrease()
     w.write("")
@@ -170,7 +169,7 @@ def defineType(w, basename, type, returntypes):
     w.write("private:")
     for field in type.fields:
         w.write("{type} {name};".format(type=field.member_type(),
-                                              name=field.member_name()))
+                                        name=field.member_name()))
 
     w.decrease()
     w.write("};")
@@ -185,20 +184,22 @@ def defineAst(outputdir, filename, basename, types, returntypes):
         w.write("#include <memory>")
         w.write("")
         w.write("namespace KeegMake {")
+        w.write("namespace {} {{".format(basename))
         w.write("")
         for type in types:
             w.write("class {};".format(type.name))
-
+        w.write("")
+        defineVisitor(w, basename, returntypes, types)
         w.write("")
         w.write("class {}{{".format(basename))
         w.write("public:")
         w.increase()
-
-        defineVisitor(w, basename, returntypes, types)
-
         w.write("virtual ~{}() = default;".format(basename))
-
         w.write("")
+        for returntype in returntypes:
+            w.write(
+                "[[nodiscard]] virtual {} accept(const Visitor{}&) const = 0;".
+                format(returntype.type, returntype.name))
         w.decrease()
         w.write("};")
         w.write("")
@@ -206,6 +207,7 @@ def defineAst(outputdir, filename, basename, types, returntypes):
         for type in types:
             defineType(w, basename, type, returntypes)
 
+        w.write("}} //namespace {}".format(basename))
         w.write("} //namespace KeegMake")
 
 
@@ -229,8 +231,8 @@ def main():
     ]
     defineAst(args.output_directory, 'expression_ast', 'Expression',
               parseFields(expression_types), visitor_returns)
-    #defineAst(args.output_directory, 'statement_ast', 'Statement',
-    #          parseFields(statement_types), visitor_returns)
+    defineAst(args.output_directory, 'statement_ast', 'Statement',
+              parseFields(statement_types), visitor_returns)
     return 0
 
 

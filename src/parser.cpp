@@ -3,7 +3,7 @@
 #include <spdlog/spdlog.h>
 namespace KeegMake
 {
-std::unique_ptr<Expression> Parser::parse()
+std::unique_ptr<Expression::Expression> Parser::parse()
 {
     try
     {
@@ -44,9 +44,9 @@ void Parser::synchronize()
     }
 }
 
-std::unique_ptr<Expression> Parser::expression() { return equality(); }
+std::unique_ptr<Expression::Expression> Parser::expression() { return equality(); }
 
-std::unique_ptr<Expression> Parser::equality()
+std::unique_ptr<Expression::Expression> Parser::equality()
 {
     auto expr = comparison();
 
@@ -54,13 +54,14 @@ std::unique_ptr<Expression> Parser::equality()
     {
         auto oper = previous();
         auto right = comparison();
-        expr = std::make_unique<Binary>(std::move(expr), std::move(oper), std::move(right));
+        expr = std::make_unique<Expression::Binary>(std::move(expr), std::move(oper),
+                                                    std::move(right));
     }
 
     return expr;
 }
 
-std::unique_ptr<Expression> Parser::comparison()
+std::unique_ptr<Expression::Expression> Parser::comparison()
 {
     auto expr = addition();
 
@@ -69,13 +70,14 @@ std::unique_ptr<Expression> Parser::comparison()
     {
         auto oper = previous();
         auto right = addition();
-        expr = std::make_unique<Binary>(std::move(expr), std::move(oper), std::move(right));
+        expr = std::make_unique<Expression::Binary>(std::move(expr), std::move(oper),
+                                                    std::move(right));
     }
 
     return expr;
 }
 
-std::unique_ptr<Expression> Parser::addition()
+std::unique_ptr<Expression::Expression> Parser::addition()
 {
     auto expr = multiplication();
 
@@ -83,13 +85,14 @@ std::unique_ptr<Expression> Parser::addition()
     {
         auto oper = previous();
         auto right = multiplication();
-        expr = std::make_unique<Binary>(std::move(expr), std::move(oper), std::move(right));
+        expr = std::make_unique<Expression::Binary>(std::move(expr), std::move(oper),
+                                                    std::move(right));
     }
 
     return expr;
 }
 
-std::unique_ptr<Expression> Parser::multiplication()
+std::unique_ptr<Expression::Expression> Parser::multiplication()
 {
     auto expr = unary();
 
@@ -97,49 +100,51 @@ std::unique_ptr<Expression> Parser::multiplication()
     {
         auto oper = previous();
         auto right = unary();
-        expr = std::make_unique<Binary>(std::move(expr), std::move(oper), std::move(right));
+        expr = std::make_unique<Expression::Binary>(std::move(expr), std::move(oper),
+                                                    std::move(right));
     }
 
     return expr;
 }
 
-std::unique_ptr<Expression> Parser::unary()
+std::unique_ptr<Expression::Expression> Parser::unary()
 {
     if (match({TokenType::BANG, TokenType::MINUS}))
     {
         auto oper = previous();
         auto right = unary();
-        return std::make_unique<Unary>(std::move(oper), std::move(right));
+        return std::make_unique<Expression::Unary>(std::move(oper), std::move(right));
     }
 
     return primary();
 }
 
-std::unique_ptr<Expression> Parser::primary()
+std::unique_ptr<Expression::Expression> Parser::primary()
 {
     if (match({TokenType::FALSE}))
     {
-        return std::make_unique<Literal>(std::make_unique<LiteralVal>(false));
+        return std::make_unique<Expression::Literal>(std::make_unique<LiteralVal>(false));
     }
     if (match({TokenType::TRUE}))
     {
-        return std::make_unique<Literal>(std::make_unique<LiteralVal>(true));
+        return std::make_unique<Expression::Literal>(std::make_unique<LiteralVal>(true));
     }
     if (match({TokenType::NIL}))
     {
-        return std::make_unique<Literal>(std::make_unique<LiteralVal>());
+        return std::make_unique<Expression::Literal>(std::make_unique<LiteralVal>());
     }
 
     if (match({TokenType::NUMBER, TokenType::STRING}))
     {
-        return std::make_unique<Literal>(std::make_unique<LiteralVal>(previous()->literal()));
+        return std::make_unique<Expression::Literal>(
+            std::make_unique<LiteralVal>(previous()->literal()));
     }
 
     if (match({TokenType::LEFT_PAREN}))
     {
         auto expr = expression();
         consume(TokenType::RIGHT_PAREN, "Expect ')' after expression.");
-        return std::make_unique<Grouping>(std::move(expr));
+        return std::make_unique<Expression::Grouping>(std::move(expr));
     }
 
     throw(error(peek(), "Expect expression."));

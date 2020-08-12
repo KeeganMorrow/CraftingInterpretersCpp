@@ -22,15 +22,18 @@ private:
 class Interpreter : public Expression::VisitorLiteralVal
 {
 public:
-    [[nodiscard]] std::unique_ptr<LiteralVal> evaluate(const Expression& expression) const;
+    [[nodiscard]] std::unique_ptr<LiteralVal> evaluate(
+        const Expression::Expression& expression) const;
 
 private:
-    [[nodiscard]] std::unique_ptr<LiteralVal> visitBinary(const Binary& expression) const override;
+    [[nodiscard]] std::unique_ptr<LiteralVal> visitBinary(
+        const Expression::Binary& expression) const override;
     [[nodiscard]] std::unique_ptr<LiteralVal> visitGrouping(
-        const Grouping& expression) const override;
+        const Expression::Grouping& expression) const override;
     [[nodiscard]] std::unique_ptr<LiteralVal> visitLiteral(
-        const Literal& expression) const override;
-    [[nodiscard]] std::unique_ptr<LiteralVal> visitUnary(const Unary& expression) const override;
+        const Expression::Literal& expression) const override;
+    [[nodiscard]] std::unique_ptr<LiteralVal> visitUnary(
+        const Expression::Unary& expression) const override;
 
     [[nodiscard]] static std::unique_ptr<LiteralVal> isTruthy(const LiteralVal& lval);
 

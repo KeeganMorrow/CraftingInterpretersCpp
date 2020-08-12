@@ -33,14 +33,21 @@ int Environment::run(const std::string& source)
     if (expression)
     {
         spdlog::info("{}", AstPrinter().print(*expression));
-        auto val = Interpreter().evaluate(*expression);
-        if (val)
+        try
         {
-            spdlog::info("Got the value {}", val->repr());
+            auto val = Interpreter().evaluate(*expression);
+            if (val)
+            {
+                spdlog::info("Got the value {}", val->repr());
+            }
+            else
+            {
+                spdlog::info("Evaluate returned nothing");
+            }
         }
-        else
+        catch (RuntimeError& e)
         {
-            spdlog::info("Evaluate returned nothing");
+            runtimeError(e);
         }
     }
     else
@@ -104,6 +111,12 @@ int Environment::runFile(const std::string& filepath)
 }
 
 void Environment::error(int line, const std::string& message) { report(line, "", message); }
+
+void Environment::runtimeError(const RuntimeError& error)
+{
+    spdlog::error("[line {}] {} (Operator {})", error.token().line(), error.what(),
+                  error.token().lexeme());
+}
 
 void Environment::report(int line, const std::string& where, const std::string& message)
 {

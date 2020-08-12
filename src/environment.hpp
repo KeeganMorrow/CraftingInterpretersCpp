@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 
+#include "interpreter.hpp"
+
 namespace KeegMake
 {
 class Environment
@@ -13,6 +15,7 @@ public:
     int runPrompt();
 
     static void error(int line, const std::string& message);
+    static void runtimeError(const RuntimeError& error);
     static void report(int line, const std::string& where, const std::string& message);
 
     // Delete undesired constructors (Allow move, not copy or assign)

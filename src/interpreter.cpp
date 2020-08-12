@@ -19,16 +19,19 @@ std::unique_ptr<LiteralVal> Interpreter::visitBinary(const Binary& expression) c
     {
     case TokenType::MINUS:
     {
+        checkNumberOperands(expression.token(), *left, *right);
         auto result = getLiteral<double>(*left) - getLiteral<double>(*right);
         return std::make_unique<LiteralVal>(result);
     }
     case TokenType::SLASH:
     {
+        checkNumberOperands(expression.token(), *left, *right);
         auto result = getLiteral<double>(*left) / getLiteral<double>(*right);
         return std::make_unique<LiteralVal>(result);
     }
     case TokenType::STAR:
     {
+        checkNumberOperands(expression.token(), *left, *right);
         auto result = getLiteral<double>(*left) * getLiteral<double>(*right);
         return std::make_unique<LiteralVal>(result);
     }
@@ -44,25 +47,29 @@ std::unique_ptr<LiteralVal> Interpreter::visitBinary(const Binary& expression) c
             auto result = getLiteral<std::string>(*left) + getLiteral<std::string>(*right);
             return std::make_unique<LiteralVal>(result);
         }
-        break;
+        throw(RuntimeError(expression.token(), "Operands must be two numbers or two strings."));
     }
     case TokenType::GREATER:
     {
+        checkNumberOperands(expression.token(), *left, *right);
         bool result = (getLiteral<double>(*left) > getLiteral<double>(*right));
         return std::make_unique<LiteralVal>(result);
     }
     case TokenType::GREATER_EQUAL:
     {
+        checkNumberOperands(expression.token(), *left, *right);
         bool result = (getLiteral<double>(*left) >= getLiteral<double>(*right));
         return std::make_unique<LiteralVal>(result);
     }
     case TokenType::LESS:
     {
+        checkNumberOperands(expression.token(), *left, *right);
         bool result = (getLiteral<double>(*left) < getLiteral<double>(*right));
         return std::make_unique<LiteralVal>(result);
     }
     case TokenType::LESS_EQUAL:
     {
+        checkNumberOperands(expression.token(), *left, *right);
         bool result = (getLiteral<double>(*left) <= getLiteral<double>(*right));
         return std::make_unique<LiteralVal>(result);
     }
@@ -96,6 +103,7 @@ std::unique_ptr<LiteralVal> Interpreter::visitUnary(const Unary& expression) con
     switch (expression.token().type())
     {
     case TokenType::MINUS:
+        checkNumberOperand(expression.token(), *right);
         return std::make_unique<LiteralVal>(-(getLiteral<double>(*right)));
     case TokenType::BANG:
         return isTruthy(*right);
@@ -105,7 +113,7 @@ std::unique_ptr<LiteralVal> Interpreter::visitUnary(const Unary& expression) con
 
     return nullptr;
 }
-[[nodiscard]] std::unique_ptr<LiteralVal> Interpreter::isTruthy(const LiteralVal& lval) const
+[[nodiscard]] std::unique_ptr<LiteralVal> Interpreter::isTruthy(const LiteralVal& lval)
 {
     bool result = true;
     if (lval.type() == LiteralValType::Nil)
@@ -122,6 +130,16 @@ void Interpreter::checkNumberOperand(const Token& token, const LiteralVal& opera
         return;
     }
     throw RuntimeError(token, "Operand must be a number.");
+}
+
+void Interpreter::checkNumberOperands(const Token& token, const LiteralVal& left,
+                                      const LiteralVal& right)
+{
+    if (left.type() == LiteralValType::Number && right.type() == LiteralValType::Number)
+    {
+        return;
+    }
+    throw RuntimeError(token, "Operands must be a number.");
 }
 
 }  // namespace KeegMake

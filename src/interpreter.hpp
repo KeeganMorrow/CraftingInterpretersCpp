@@ -3,13 +3,15 @@
 #include "expression_ast.hpp"
 namespace KeegMake
 {
-class RuntimeError : BaseException
+class RuntimeError : public BaseException
 {
 public:
     RuntimeError(const Token& token, std::string error_msg)
         : BaseException(std::move(error_msg)), m_token(token)
     {
     }
+
+    [[nodiscard]] const Token& token() const { return m_token; };
 
 private:
     const std::string m_error_msg;
@@ -30,9 +32,11 @@ private:
         const Literal& expression) const override;
     [[nodiscard]] std::unique_ptr<LiteralVal> visitUnary(const Unary& expression) const override;
 
-    [[nodiscard]] std::unique_ptr<LiteralVal> isTruthy(const LiteralVal& lval) const;
+    [[nodiscard]] static std::unique_ptr<LiteralVal> isTruthy(const LiteralVal& lval);
 
-    void checkNumberOperand(const Token& token, const LiteralVal& operand);
+    static void checkNumberOperand(const Token& token, const LiteralVal& operand);
+    static void checkNumberOperands(const Token& token, const LiteralVal& left,
+                                    const LiteralVal& right);
 };
 
 }  // namespace KeegMake

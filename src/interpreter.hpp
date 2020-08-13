@@ -2,6 +2,8 @@
 #include "exception.hpp"
 #include "expression_ast.hpp"
 #include "statement_ast.hpp"
+#include "environment.hpp"
+#include <utility>
 namespace KeegMake
 {
 class RuntimeError : public BaseException
@@ -23,7 +25,7 @@ private:
 class Interpreter : public ExpressionVisitorLiteralVal, public StatementVisitorVoid
 {
 public:
-    Interpreter() = default;
+    Interpreter():m_environment(std::make_unique<Environment>()){}
     [[nodiscard]] std::unique_ptr<LiteralVal> evaluate(const Expression& expression) const;
 
     void interpret(std::vector<std::unique_ptr<const Statement>>&& program);
@@ -50,6 +52,8 @@ private:
     static void checkNumberOperand(const Token& token, const LiteralVal& operand);
     static void checkNumberOperands(const Token& token, const LiteralVal& left,
                                     const LiteralVal& right);
+
+    std::unique_ptr<Environment> m_environment;
 };
 
 }  // namespace KeegMake

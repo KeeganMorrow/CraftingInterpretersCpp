@@ -249,7 +249,7 @@ def main():
     statement_types = [
         "Expression | Expression expression left",
         "Print | Expression expression",
-        "Variable | Token name, Expression expression",
+        "Variable | Token name, Expression initializer",
     ]
     visitor_returns = [
         ReturnType("Void", "void"),

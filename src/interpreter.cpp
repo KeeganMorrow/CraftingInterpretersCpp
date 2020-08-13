@@ -36,8 +36,14 @@ void Interpreter::visitStatementPrint(const StatementPrint& statement) const
 
 void Interpreter::visitStatementVariable(const StatementVariable& statement) const
 {
-    (void)statement;
-    return;
+    // TODO: This could be null in theory, but my program would fail first.
+    // Should fix that
+    //if (statement.initializer()) {
+
+    //}
+    auto value = evaluate(statement.initializer());
+
+    m_environment->define(statement.name().lexeme(), std::move(value));
 }
 std::unique_ptr<LiteralVal> Interpreter::visitExpressionBinary(
     const ExpressionBinary& expression) const
@@ -150,8 +156,7 @@ std::unique_ptr<LiteralVal> Interpreter::visitExpressionUnary(
 std::unique_ptr<LiteralVal> Interpreter::visitExpressionVariable(
     const ExpressionVariable& expression) const
 {
-    (void)expression;
-    return nullptr;
+    return m_environment->get(expression.name());
 }
 std::unique_ptr<LiteralVal> Interpreter::isTruthy(const LiteralVal& lval)
 {

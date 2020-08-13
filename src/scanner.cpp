@@ -253,7 +253,7 @@ void Scanner::identifier()
     }
     catch (std::out_of_range& e)
     {
-        type = TokenType::VAR;
+        type = TokenType::IDENTIFIER;
     }
 
     addToken(type, text);

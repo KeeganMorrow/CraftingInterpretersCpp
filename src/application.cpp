@@ -11,7 +11,7 @@
 #include "parser.hpp"
 #include "scanner.hpp"
 
-namespace KeegMake
+namespace Lox
 {
 const int EXIT_RESULT_OK = 0;
 const int EXIT_RESULT_PARSE_ERROR = 1;
@@ -145,4 +145,4 @@ void Application::report(int line, const std::string& where, const std::string& 
 {
     spdlog::error("[line {}] Error {}: {}", line, where, message);
 }
-}  // namespace KeegMake
+}  // namespace Lox

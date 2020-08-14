@@ -2,7 +2,7 @@
 #include <exception>
 #include <string>
 
-namespace KeegMake
+namespace Lox
 {
 class Token;
 
@@ -36,4 +36,4 @@ public:
 private:
     const std::string m_type;
 };
-}  // namespace KeegMake
+}  // namespace Lox

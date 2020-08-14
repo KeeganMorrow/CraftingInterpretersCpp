@@ -4,7 +4,7 @@
 #include "statement_ast.hpp"
 #include "environment.hpp"
 #include <utility>
-namespace KeegMake
+namespace Lox
 {
 class RuntimeError : public BaseException
 {
@@ -56,4 +56,4 @@ private:
     std::unique_ptr<Environment> m_environment;
 };
 
-}  // namespace KeegMake
+}  // namespace Lox

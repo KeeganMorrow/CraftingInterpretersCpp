@@ -4,7 +4,7 @@
 
 #include "expression_ast.hpp"
 
-namespace KeegMake
+namespace Lox
 {
 class AstPrinter : public ExpressionVisitorString
 {
@@ -25,4 +25,4 @@ private:
                                            const std::vector<const Expression*>& expressions) const;
 };
 
-}  // namespace KeegMake
+}  // namespace Lox

@@ -1,7 +1,7 @@
 #include "parser.hpp"
 
 #include <spdlog/spdlog.h>
-namespace KeegMake
+namespace Lox
 {
 std::vector<std::unique_ptr<const Statement>> Parser::parse()
 {
@@ -270,4 +270,4 @@ ParseError Parser::error(std::unique_ptr<Token> token, const std::string& messag
 
     return ParseError(message);
 }
-}  // namespace KeegMake
+}  // namespace Lox

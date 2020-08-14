@@ -3,7 +3,7 @@
 #include <utility>
 #include <spdlog/spdlog.h>
 
-namespace KeegMake
+namespace Lox
 {
 
 void Environment::define(std::string name, std::unique_ptr<LiteralVal> value)
@@ -22,4 +22,4 @@ LiteralVal&::get(const Token &token)
     }
 
 }
-}  // namespace KeegMake
+}  // namespace Lox

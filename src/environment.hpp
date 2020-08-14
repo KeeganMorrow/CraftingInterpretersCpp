@@ -6,7 +6,7 @@
 #include "literal.hpp"
 #include "token.hpp"
 
-namespace KeegMake
+namespace Lox
 {
 
 class Environment
@@ -21,4 +21,4 @@ private:
     std::map<std::string, std::unique_ptr<LiteralVal>> m_values;
 };
 
-}  // namespace KeegMake
+}  // namespace Lox

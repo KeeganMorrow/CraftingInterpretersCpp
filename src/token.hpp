@@ -6,7 +6,7 @@
 
 #include "exception.hpp"
 #include "literal.hpp"
-namespace KeegMake
+namespace Lox
 {
 enum class TokenType
 {
@@ -95,4 +95,4 @@ private:
     std::unique_ptr<const LiteralVal> m_literal;
 };
 
-}  // namespace KeegMake
+}  // namespace Lox

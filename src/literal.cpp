@@ -1,6 +1,6 @@
 #include "literal.hpp"
 
-namespace KeegMake
+namespace Lox
 {
 const std::string& LiteralValTypeToStr(LiteralValType type)
 {
@@ -16,4 +16,4 @@ const std::string& LiteralValTypeToStr(LiteralValType type)
         throw WrongLiteralType("?");
     }
 }
-}  // namespace KeegMake
+}  // namespace Lox

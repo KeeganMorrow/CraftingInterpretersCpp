@@ -2,7 +2,7 @@
 #include "expression_ast.hpp"
 #include "token.hpp"
 
-namespace KeegMake
+namespace Lox
 {
 #if 0
     class Expr {
@@ -23,4 +23,4 @@ namespace KeegMake
 
     };
 #endif  // 0
-}  // namespace KeegMake
+}  // namespace Lox

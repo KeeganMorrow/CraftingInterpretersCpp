@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "token.hpp"
-namespace KeegMake
+namespace Lox
 {
 class Token;
 
@@ -44,4 +44,4 @@ private:
     static const std::map<std::string, TokenType> Keywords;
 };
 
-}  // namespace KeegMake
+}  // namespace Lox

@@ -3,7 +3,7 @@
 #include <spdlog/fmt/fmt.h>
 #include <spdlog/spdlog.h>
 
-namespace KeegMake
+namespace Lox
 {
 std::string AstPrinter::visitExpressionBinary(const ExpressionBinary& expression) const
 {
@@ -39,4 +39,4 @@ std::string AstPrinter::parenthesize(const std::string& name,
     return result;
 }
 
-}  // namespace KeegMake
+}  // namespace Lox

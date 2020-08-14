@@ -5,7 +5,7 @@
 
 #include "exception.hpp"
 
-namespace KeegMake
+namespace Lox
 {
 enum class LiteralValType
 {
@@ -112,4 +112,4 @@ const std::string LiteralValTypeStr_Number{"Number"};
 
 const std::string &LiteralValTypeToStr(LiteralVal &);
 
-}  // namespace KeegMake
+}  // namespace Lox

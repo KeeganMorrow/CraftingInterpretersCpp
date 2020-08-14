@@ -5,7 +5,7 @@ option(SPDLOG_ENABLE_PCH ON)
 add_subdirectory(third_party/catch2)
 add_subdirectory(third_party/spdlog)
 
-project(keegmake)
+project(lox)
 
 include(cmake/ClangFormat.cmake)
 include(cmake/ClangTidy.cmake)
@@ -16,19 +16,19 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL
                                               "Clang"
 )
 
-    set(KEEGMAKE_CXX_FLAGS_WARNING
+    set(LOX_CXX_FLAGS_WARNING
         "-Wall;-Wextra;-Werror;-Wno-unused-private-field"
     )
-    set(KEEGMAKE_CXX_FLAGS_OPTIMIZATION "-Og;-g")
-    set(KEEGMAKE_CXX_FLAGS_TEST "--coverage")
-    set(KEEGMAKE_CXX_FLAGS_OTHERS "")
+    set(LOX_CXX_FLAGS_OPTIMIZATION "-Og;-g")
+    set(LOX_CXX_FLAGS_TEST "--coverage")
+    set(LOX_CXX_FLAGS_OTHERS "")
     if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
         if(${ENABLE_COLOR})
-            list(APPEND KEEGMAKE_CXX_FLAGS_OTHERS "-fdiagnostics-color=always")
+            list(APPEND LOX_CXX_FLAGS_OTHERS "-fdiagnostics-color=always")
         endif()
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
         if(${ENABLE_COLOR})
-            list(APPEND KEEGMAKE_CXX_FLAGS_OTHERS "-fdiagnostics-color")
+            list(APPEND LOX_CXX_FLAGS_OTHERS "-fdiagnostics-color")
         endif()
 
     endif()
@@ -74,8 +74,8 @@ target_link_libraries(main spdlog::spdlog ast)
 target_compile_features(main PRIVATE cxx_std_17)
 target_compile_options(
     main
-    PRIVATE ${KEEGMAKE_CXX_FLAGS_WARNING} ${KEEGMAKE_CXX_FLAGS_OPTIMIZATION}
-            ${KEEGMAKE_CXX_FLAGS_OTHERS}
+    PRIVATE ${LOX_CXX_FLAGS_WARNING} ${LOX_CXX_FLAGS_OPTIMIZATION}
+            ${LOX_CXX_FLAGS_OTHERS}
 )
 target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/src")
 clangtidy_addtarget(main)

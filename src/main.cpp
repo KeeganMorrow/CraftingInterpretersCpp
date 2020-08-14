@@ -7,7 +7,7 @@
 #include "expressions.hpp"
 #include "literal.hpp"
 
-using namespace KeegMake;
+using namespace Lox;
 
 int main(int argc, char* argv[])
 {
@@ -22,6 +22,6 @@ int main(int argc, char* argv[])
     {
         args.emplace_back(argv[i]);
     }
-    KeegMake::Application application(std::move(args));
+    Lox::Application application(std::move(args));
     return application.start();
 }

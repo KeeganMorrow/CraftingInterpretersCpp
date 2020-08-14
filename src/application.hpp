@@ -4,7 +4,7 @@
 
 #include "interpreter.hpp"
 
-namespace KeegMake
+namespace Lox
 {
 class Application
 {
@@ -28,4 +28,4 @@ private:
     bool m_hadError{false};
     const std::vector<std::string> m_args;
 };
-}  // namespace KeegMake
+}  // namespace Lox

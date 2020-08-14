@@ -7,7 +7,7 @@
 #include "statement_ast.hpp"
 #include "token.hpp"
 
-namespace KeegMake
+namespace Lox
 {
 class Parser
 {
@@ -49,4 +49,4 @@ private:
     const std::vector<Token> m_tokens;
     int m_current = 0;
 };
-}  // namespace KeegMake
+}  // namespace Lox

@@ -28,7 +28,8 @@ void Interpreter::interpret(std::vector<std::unique_ptr<const Statement>>&& prog
     catch (RuntimeError& error)
     {
         spdlog::error(error.what());
-        spdlog::error("Error found on line {} token {}", error.token().line(), error.token().lexeme());
+        spdlog::error("Error found on line {} token {}", error.token().line(),
+                      error.token().lexeme());
     }
 }
 void Interpreter::visitStatementExpression(const StatementExpression& statement) const

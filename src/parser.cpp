@@ -97,10 +97,7 @@ std::unique_ptr<Statement> Parser::varDeclaration()
                                                std::move(initializer));
 }
 
-std::unique_ptr<Expression> Parser::expression()
-{
-    return equality();
-}
+std::unique_ptr<Expression> Parser::expression() { return equality(); }
 
 std::unique_ptr<Expression> Parser::equality()
 {
@@ -249,20 +246,11 @@ const Token& Parser::advance()
     return previous();
 }
 
-bool Parser::isAtEnd() const
-{
-    return peek().type() == TokenType::END_OF_FILE;
-}
+bool Parser::isAtEnd() const { return peek().type() == TokenType::END_OF_FILE; }
 
-const Token& Parser::peek() const
-{
-    return m_tokens.at(m_current);
-}
+const Token& Parser::peek() const { return m_tokens.at(m_current); }
 
-const Token& Parser::previous() const
-{
-    return m_tokens.at(m_current - 1);
-}
+const Token& Parser::previous() const { return m_tokens.at(m_current - 1); }
 
 const Token& Parser::consume(TokenType type, const std::string& message)
 {

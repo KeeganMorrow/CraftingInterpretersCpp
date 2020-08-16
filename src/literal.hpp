@@ -54,7 +54,7 @@ public:
     friend T getLiteral(LiteralVal &val);
 
 protected:
-    //NOLINTNEXTLINE
+    // NOLINTNEXTLINE
     LiteralVariant m_value;
 };
 

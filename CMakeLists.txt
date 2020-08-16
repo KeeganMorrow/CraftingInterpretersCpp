@@ -9,6 +9,9 @@ project(lox)
 
 include(cmake/ClangFormat.cmake)
 include(cmake/ClangTidy.cmake)
+include(cmake/CCache.cmake)
+
+ccache_setup()
 
 option(ENABLE_COLOR "Enable colors in the output of all possible tools" ON)
 

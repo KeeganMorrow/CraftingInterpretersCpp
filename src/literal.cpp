@@ -2,7 +2,7 @@
 
 namespace lox
 {
-const std::string& LiteralValTypeToStr(LiteralValType type)
+const std::string& literalValTypeToStr(LiteralValType type)
 {
     switch (type)
     {

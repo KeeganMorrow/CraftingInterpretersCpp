@@ -70,6 +70,6 @@ const std::string LiteralValTypeStr_String{"String"};
 const std::string LiteralValTypeStr_Bool{"Bool"};
 const std::string LiteralValTypeStr_Number{"Number"};
 
-const std::string &LiteralValTypeToStr(LiteralVal &);
+const std::string &literalValTypeToStr(LiteralVal &);
 
 }  // namespace lox

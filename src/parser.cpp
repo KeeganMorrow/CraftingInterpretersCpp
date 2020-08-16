@@ -8,7 +8,11 @@ std::vector<std::unique_ptr<const Statement>> Parser::parse()
     std::vector<std::unique_ptr<const Statement>> statements;
     while (!isAtEnd())
     {
-        statements.emplace_back(declaration());
+        auto dec = declaration();
+        if (dec != nullptr)
+        {
+            statements.emplace_back(std::move(dec));
+        }
     }
     return statements;
 }

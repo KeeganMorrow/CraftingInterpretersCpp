@@ -3,7 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include <cassert>
-namespace Lox
+namespace lox
 {
 std::unique_ptr<LiteralVal> Interpreter::evaluate(const Expression* expression) const
 {
@@ -198,4 +198,4 @@ void Interpreter::checkNumberOperands(const Token& token, const LiteralVal& left
     throw RuntimeError(token, "Operands must be a number.");
 }
 
-}  // namespace Lox
+}  // namespace lox

@@ -11,7 +11,7 @@
 #include "parser.hpp"
 #include "scanner.hpp"
 
-namespace Lox
+namespace lox
 {
 const int EXIT_RESULT_OK = 0;
 const int EXIT_RESULT_PARSE_ERROR = 1;
@@ -117,4 +117,4 @@ void Application::report(int line, const std::string& where, const std::string& 
 {
     spdlog::error("[line {}] Error {}: {}", line, where, message);
 }
-}  // namespace Lox
+}  // namespace lox

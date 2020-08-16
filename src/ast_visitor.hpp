@@ -4,7 +4,7 @@
 
 #include "expression_ast.hpp"
 
-namespace Lox
+namespace lox
 {
 class AstPrinter : public ExpressionVisitorString
 {
@@ -25,4 +25,4 @@ private:
                                            const std::vector<const Expression*>& expressions) const;
 };
 
-}  // namespace Lox
+}  // namespace lox

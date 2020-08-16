@@ -204,7 +204,7 @@ def defineAst(outputdir, fileheader, filename, basename, types, returntypes):
         for line in fileheader:
             w.write(line)
         w.write("")
-        w.write("namespace Lox {")
+        w.write("namespace lox {")
         w.write("")
         for type in types:
             w.write("class {};".format(type.className()))
@@ -230,7 +230,7 @@ def defineAst(outputdir, fileheader, filename, basename, types, returntypes):
         for type in types:
             defineType(w, basename, type, returntypes)
 
-        w.write("} //namespace Lox")
+        w.write("} //namespace lox")
 
 
 def main():

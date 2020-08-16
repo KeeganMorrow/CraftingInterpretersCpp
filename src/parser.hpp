@@ -6,7 +6,7 @@
 #include "statement_ast.hpp"
 #include "token.hpp"
 
-namespace Lox
+namespace lox
 {
 class Parser
 {
@@ -47,4 +47,4 @@ private:
     const std::vector<Token> m_tokens;
     int m_current = 0;
 };
-}  // namespace Lox
+}  // namespace lox

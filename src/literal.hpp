@@ -7,7 +7,7 @@
 
 #include "exception.hpp"
 
-namespace Lox
+namespace lox
 {
 enum class LiteralValType
 {
@@ -72,4 +72,4 @@ const std::string LiteralValTypeStr_Number{"Number"};
 
 const std::string &LiteralValTypeToStr(LiteralVal &);
 
-}  // namespace Lox
+}  // namespace lox

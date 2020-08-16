@@ -6,7 +6,7 @@
 
 #include "exception.hpp"
 #include "literal.hpp"
-namespace Lox
+namespace lox
 {
 enum class TokenType
 {
@@ -95,4 +95,4 @@ private:
     std::unique_ptr<const LiteralVal> m_literal;
 };
 
-}  // namespace Lox
+}  // namespace lox

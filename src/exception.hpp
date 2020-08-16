@@ -2,7 +2,7 @@
 #include <exception>
 #include <string>
 
-namespace Lox
+namespace lox
 {
 class Token;
 
@@ -36,4 +36,4 @@ public:
 private:
     const std::string m_type;
 };
-}  // namespace Lox
+}  // namespace lox

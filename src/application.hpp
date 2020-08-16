@@ -4,7 +4,7 @@
 
 #include "interpreter.hpp"
 
-namespace Lox
+namespace lox
 {
 class Application
 {
@@ -29,4 +29,4 @@ private:
     const std::vector<std::string> m_args;
     Interpreter m_interpreter;
 };
-}  // namespace Lox
+}  // namespace lox

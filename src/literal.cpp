@@ -1,6 +1,6 @@
 #include "literal.hpp"
 
-namespace Lox
+namespace lox
 {
 const std::string& LiteralValTypeToStr(LiteralValType type)
 {
@@ -67,4 +67,4 @@ const std::string& LiteralValTypeToStr(LiteralValType type)
                   (void *)this);
     throw(std::exception());
 }
-}  // namespace Lox
+}  // namespace lox

@@ -1,7 +1,7 @@
 #include "parser.hpp"
 
 #include <spdlog/spdlog.h>
-namespace Lox
+namespace lox
 {
 std::vector<std::unique_ptr<const Statement>> Parser::parse()
 {
@@ -288,4 +288,4 @@ ParseError Parser::error(const Token& token, const std::string& message)
 
     return ParseError(message);
 }
-}  // namespace Lox
+}  // namespace lox

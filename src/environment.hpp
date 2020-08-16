@@ -6,7 +6,7 @@
 #include "literal.hpp"
 #include "token.hpp"
 
-namespace Lox
+namespace lox
 {
 class Environment
 {
@@ -20,4 +20,4 @@ private:
     std::map<std::string, std::unique_ptr<LiteralVal>> m_values;
 };
 
-}  // namespace Lox
+}  // namespace lox

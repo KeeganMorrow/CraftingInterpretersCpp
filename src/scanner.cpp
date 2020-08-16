@@ -6,7 +6,7 @@
 
 #include "application.hpp"
 
-namespace Lox
+namespace lox
 {
 Scanner::Scanner(const std::string& source) : m_source(source) {}
 
@@ -267,4 +267,4 @@ const std::map<std::string, TokenType> Scanner::Keywords = {
     {"this", TokenType::THIS},   {"true", TokenType::TRUE},     {"var", TokenType::VAR},
     {"while", TokenType::WHILE}};
 
-}  // namespace Lox
+}  // namespace lox

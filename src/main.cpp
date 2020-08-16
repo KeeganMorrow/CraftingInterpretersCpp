@@ -19,6 +19,6 @@ int main(int argc, char* argv[])
     {
         args.emplace_back(argv[i]);
     }
-    Lox::Application application(std::move(args));
+    lox::Application application(std::move(args));
     return application.start();
 }

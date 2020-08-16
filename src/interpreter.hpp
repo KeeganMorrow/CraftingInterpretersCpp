@@ -5,7 +5,7 @@
 #include "exception.hpp"
 #include "expression_ast.hpp"
 #include "statement_ast.hpp"
-namespace Lox
+namespace lox
 {
 class RuntimeError : public BaseException
 {
@@ -57,4 +57,4 @@ private:
     std::unique_ptr<Environment> m_environment;
 };
 
-}  // namespace Lox
+}  // namespace lox

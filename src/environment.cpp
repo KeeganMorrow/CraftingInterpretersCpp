@@ -6,7 +6,7 @@
 
 #include "interpreter.hpp"
 
-namespace Lox
+namespace lox
 {
 void Environment::define(std::string name, std::unique_ptr<LiteralVal> value)
 {
@@ -27,4 +27,4 @@ LiteralVal Environment::get(const Token &token)
         throw RuntimeError(token, "Undefined variable " + token.lexeme() + ".");
     }
 }
-}  // namespace Lox
+}  // namespace lox

@@ -53,7 +53,7 @@ public:
         }
         if (std::holds_alternative<bool>(m_value))
         {
-            return LiteralValType::Number;
+            return LiteralValType::Bool;
         }
         if (std::holds_alternative<double>(m_value))
         {

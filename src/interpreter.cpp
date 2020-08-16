@@ -7,7 +7,7 @@ namespace Lox
 {
 std::unique_ptr<LiteralVal> Interpreter::evaluate(const Expression* expression) const
 {
-    if (expression)
+    if (expression != nullptr)
     {
         return expression->accept(*this);
     }

@@ -99,11 +99,11 @@ void Scanner::scanToken()
         m_line++;
         break;
     default:
-        if (std::isdigit(c))
+        if (std::isdigit(c) != 0)
         {
             number();
         }
-        else if (std::isalpha(c))
+        else if (std::isalpha(c) != 0)
         {
             identifier();
         }
@@ -215,18 +215,18 @@ void Scanner::string()
 
 void Scanner::number()
 {
-    while (std::isdigit(peek()))
+    while (std::isdigit(peek()) != 0)
     {
         advance();
     }
 
     // Look for a fractional part
-    if (peek() == '.' && std::isdigit(peekNext()))
+    if (peek() == '.' && std::isdigit(peekNext()) != 0)
     {
         // Consume the "."
         advance();
 
-        while (std::isdigit(peek()))
+        while (std::isdigit(peek()) != 0)
         {
             advance();
         }
@@ -239,7 +239,7 @@ void Scanner::number()
 
 void Scanner::identifier()
 {
-    while (std::isalnum(peek()))
+    while (std::isalnum(peek()) != 0)
     {
         advance();
     }

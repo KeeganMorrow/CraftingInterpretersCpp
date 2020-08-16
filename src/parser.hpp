@@ -11,7 +11,7 @@ namespace Lox
 class Parser
 {
 public:
-    Parser(std::vector<Token>&& tokens) : m_tokens(tokens) {}
+    explicit Parser(std::vector<Token>&& tokens) : m_tokens(tokens) {}
 
     std::vector<std::unique_ptr<const Statement>> parse();
 

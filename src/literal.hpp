@@ -37,10 +37,10 @@ using LiteralVariant = std::variant<double, bool, std::string, NilLiteral>;
 class LiteralVal
 {
 public:
-    LiteralVal(std::string value) : m_value(value) {}
-    LiteralVal(double value) : m_value(value) {}
-    LiteralVal(bool value) : m_value(value) {}
-    LiteralVal() : m_value(NilLiteral()) {}
+    explicit LiteralVal(std::string value) : m_value(value) {}
+    explicit LiteralVal(double value) : m_value(value) {}
+    explicit LiteralVal(bool value) : m_value(value) {}
+    LiteralVal() = default;
     LiteralVal(const LiteralVal &other) = default;
 
     bool operator==(const LiteralVal &other) const { return m_value == other.m_value; }
@@ -101,6 +101,7 @@ public:
     friend T getLiteral(LiteralVal &val);
 
 protected:
+    //NOLINTNEXTLINE
     LiteralVariant m_value;
 };
 

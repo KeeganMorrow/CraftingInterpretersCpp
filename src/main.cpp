@@ -6,8 +6,6 @@
 #include "ast_visitor.hpp"
 #include "literal.hpp"
 
-using namespace Lox;
-
 int main(int argc, char* argv[])
 {
     (void)argc;

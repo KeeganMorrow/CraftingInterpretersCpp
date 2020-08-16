@@ -9,7 +9,7 @@ namespace Lox
 class Application
 {
 public:
-    Application(std::vector<std::string>&& args) : m_args(std::move(args)) {}
+    explicit Application(std::vector<std::string>&& args) : m_args(std::move(args)) {}
     int start();
 
     // Delete undesired constructors (Allow move, not copy or assign)

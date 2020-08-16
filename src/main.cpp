@@ -4,7 +4,6 @@
 
 #include "application.hpp"
 #include "ast_visitor.hpp"
-#include "expressions.hpp"
 #include "literal.hpp"
 
 using namespace Lox;

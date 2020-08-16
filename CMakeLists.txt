@@ -20,7 +20,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL
 )
 
     set(LOX_CXX_FLAGS_WARNING
-        "-Wall;-Wextra;-Werror;-Wno-unused-private-field"
+        "-Wall;-Wextra;-Werror;-Wno-unused-private-field;-pedantic"
     )
     set(LOX_CXX_FLAGS_OPTIMIZATION "-Og;-g")
     set(LOX_CXX_FLAGS_TEST "--coverage")

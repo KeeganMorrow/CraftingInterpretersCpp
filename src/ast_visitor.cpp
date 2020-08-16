@@ -28,7 +28,7 @@ std::string AstPrinter::visitExpressionUnary(const ExpressionUnary& expression) 
 std::string AstPrinter::parenthesize(const std::string& name,
                                      const std::vector<const Expression*>& expressions) const
 {
-    spdlog::info("Parenthesizing {} with tokens", name);
+    spdlog::trace("Parenthesizing {} with tokens", name);
     std::string result{"("};
     result.append(name);
     for (const auto& expression : expressions)

@@ -139,14 +139,14 @@ std::unique_ptr<Expression> Parser::addition()
 
     while (match({TokenType::MINUS, TokenType::PLUS}))
     {
-        spdlog::info("Combining additions...");
+        spdlog::debug("Combining additions...");
         auto oper = previous();
         auto right = multiplication();
         expr = std::make_unique<ExpressionBinary>(std::move(expr), std::make_unique<Token>(oper),
                                                   std::move(right));
     }
 
-    spdlog::info("Additions combined!");
+    spdlog::debug("Additions combined!");
     return expr;
 }
 
@@ -181,36 +181,36 @@ std::unique_ptr<Expression> Parser::primary()
 {
     if (match({TokenType::FALSE}))
     {
-        spdlog::info("Found primary expression false");
+        spdlog::debug("Found primary expression false");
         return std::make_unique<ExpressionLiteral>(std::make_unique<LiteralVal>(false));
     }
     if (match({TokenType::TRUE}))
     {
-        spdlog::info("Found primary expression true");
+        spdlog::debug("Found primary expression true");
         return std::make_unique<ExpressionLiteral>(std::make_unique<LiteralVal>(true));
     }
     if (match({TokenType::NIL}))
     {
-        spdlog::info("Found primary expression nil");
+        spdlog::debug("Found primary expression nil");
         return std::make_unique<ExpressionLiteral>(std::make_unique<LiteralVal>());
     }
 
     if (match({TokenType::NUMBER, TokenType::STRING}))
     {
-        spdlog::info("Found primary expression string or number {}", previous().repr());
+        spdlog::debug("Found primary expression string or number {}", previous().repr());
         return std::make_unique<ExpressionLiteral>(
             std::make_unique<LiteralVal>(previous().literal()));
     }
 
     if (match({TokenType::IDENTIFIER}))
     {
-        spdlog::info("Found primary expression identifier");
+        spdlog::debug("Found primary expression identifier");
         return std::make_unique<ExpressionVariable>(std::make_unique<Token>(previous()));
     }
 
     if (match({TokenType::LEFT_PAREN}))
     {
-        spdlog::info("Found primary expression left paren");
+        spdlog::debug("Found primary expression left paren");
         auto expr = expression();
         consume(TokenType::RIGHT_PAREN, "Expect ')' after expression.");
         return std::make_unique<ExpressionGrouping>(std::move(expr));

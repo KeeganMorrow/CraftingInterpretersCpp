@@ -44,40 +44,12 @@ int Application::run(const std::string& source)
 
     for (auto& token : tokens)
     {
-        spdlog::info("Found token {}", token.repr());
+        spdlog::debug("Found token {}", token.repr());
     }
 
     Parser parser(std::move(tokens));
     auto program = parser.parse();
     m_interpreter.interpret(std::move(program));
-#if 0
-    if (program)
-    {
-        spdlog::info("{}", AstPrinter().print(*expression));
-        try
-        {
-            auto val = Interpreter().evaluate(*expression);
-            if (val)
-            {
-                spdlog::info("Got the value {}", val->repr());
-            }
-            else
-            {
-                spdlog::info("Evaluate returned nothing");
-            }
-        }
-        catch (RuntimeError& e)
-        {
-            runtimeError(e);
-        }
-    }
-    else
-    {
-        m_hadError = true;
-        spdlog::warn("No valid expression after parsing, see previous output");
-        result = EXIT_RESULT_PARSE_ERROR;
-    }
-#endif  // 0
 
     return result;
 }
@@ -102,7 +74,7 @@ int Application::runPrompt()
 int Application::runFile(const std::string& filepath)
 {
     int status{0};
-    spdlog::info("Opening file {}", filepath);
+    spdlog::debug("Opening file {}", filepath);
 
     std::filesystem::path path{filepath};
     std::ifstream file;
@@ -114,8 +86,9 @@ int Application::runFile(const std::string& filepath)
         {
             buf << file.rdbuf();
             auto result = run(buf.str());
-            if (m_hadError || result)
+            if (m_hadError || result != 0)
             {
+                spdlog::error("Error reading file {}", filepath);
                 status = EXIT_RESULT_PARSE_ERROR;
             }
         }

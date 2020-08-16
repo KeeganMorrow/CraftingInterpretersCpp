@@ -46,7 +46,7 @@ void Interpreter::visitStatementVariable(const StatementVariable& statement) con
 {
     std::unique_ptr<LiteralVal> value;
     assert(statement.name() != nullptr);
-    if (statement.initializer())
+    if (statement.initializer() != nullptr)
     {
         value = evaluate(statement.initializer());
     }
@@ -165,7 +165,7 @@ std::unique_ptr<LiteralVal> Interpreter::visitExpressionVariable(
     const ExpressionVariable& expression) const
 {
     const auto& varname = expression.name();
-    spdlog::info("Reading variable {}", varname->lexeme());
+    spdlog::debug("Reading variable {}", varname->lexeme());
     auto val = m_environment->get(*varname);
     return std::make_unique<LiteralVal>(val);
 }

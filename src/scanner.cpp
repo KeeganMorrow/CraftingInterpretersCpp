@@ -124,7 +124,7 @@ char Scanner::advance()
 void Scanner::addToken(TokenType type)
 {
     auto text = m_source.substr(m_start, m_current - m_start);
-    spdlog::info("Adding a token with lexeme {} literal N/A start {} current {}", text, m_start,
+    spdlog::debug("Adding a token with lexeme {} literal N/A start {} current {}", text, m_start,
                  m_current);
     m_tokens.emplace_back(Token{type, text, std::make_unique<LiteralVal>(), m_line});
 }
@@ -132,7 +132,7 @@ void Scanner::addToken(TokenType type)
 void Scanner::addToken(TokenType type, std::string& literal)
 {
     auto text = m_source.substr(m_start, m_current - m_start);
-    spdlog::info("Adding a token with lexeme {} literal {} start {} current {}", text, literal,
+    spdlog::debug("Adding a token with lexeme {} literal {} start {} current {}", text, literal,
                  m_start, m_current);
     m_tokens.emplace_back(
         Token{type, std::move(text), std::make_unique<LiteralVal>(literal), m_line});
@@ -141,7 +141,7 @@ void Scanner::addToken(TokenType type, std::string& literal)
 void Scanner::addToken(TokenType type, bool literal)
 {
     auto text = m_source.substr(m_start, m_current - m_start);
-    spdlog::info("Adding a token with lexeme {} literal {} start {} current {}", text, literal,
+    spdlog::debug("Adding a token with lexeme {} literal {} start {} current {}", text, literal,
                  m_start, m_current);
     m_tokens.emplace_back(
         Token{type, std::move(text), std::make_unique<LiteralVal>(literal), m_line});
@@ -150,7 +150,7 @@ void Scanner::addToken(TokenType type, bool literal)
 void Scanner::addToken(TokenType type, double literal)
 {
     auto text = m_source.substr(m_start, m_current - m_start);
-    spdlog::info("Adding a token with lexeme {} literal {} start {} current {}", text, literal,
+    spdlog::debug("Adding a token with lexeme {} literal {} start {} current {}", text, literal,
                  m_start, m_current);
     m_tokens.emplace_back(
         Token{type, std::move(text), std::make_unique<LiteralVal>(literal), m_line});

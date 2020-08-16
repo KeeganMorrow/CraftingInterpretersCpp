@@ -7,21 +7,22 @@ namespace Lox
 {
 std::string AstPrinter::visitExpressionBinary(const ExpressionBinary& expression) const
 {
-    std::vector<const Expression*> exp_vec{&(expression.left()), &(expression.right())};
-    return parenthesize(expression.token().lexeme(), exp_vec);
+    std::vector<const Expression*> exp_vec{expression.left(), expression.right()};
+    return parenthesize(expression.token()->lexeme(), exp_vec);
 }
 std::string AstPrinter::visitExpressionGrouping(const ExpressionGrouping& expression) const
 {
-    return parenthesize("group", std::vector<const Expression*>{&expression.expression()});
+    return parenthesize("group", std::vector<const Expression*>{expression.expression()});
 }
 std::string AstPrinter::visitExpressionLiteral(const ExpressionLiteral& expression) const
 {
-    return expression.value().repr();
+    assert(expression.value());
+    return expression.value()->repr();
 }
 std::string AstPrinter::visitExpressionUnary(const ExpressionUnary& expression) const
 {
-    return parenthesize(expression.token().lexeme(),
-                        std::vector<const Expression*>{&(expression.right())});
+    return parenthesize(expression.token()->lexeme(),
+                        std::vector<const Expression*>{expression.right()});
 }
 
 std::string AstPrinter::parenthesize(const std::string& name,

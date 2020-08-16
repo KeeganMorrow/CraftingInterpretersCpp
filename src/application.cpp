@@ -49,8 +49,7 @@ int Application::run(const std::string& source)
 
     Parser parser(std::move(tokens));
     auto program = parser.parse();
-    Interpreter interpreter{};
-    interpreter.interpret(std::move(program));
+    m_interpreter.interpret(std::move(program));
 #if 0
     if (program)
     {

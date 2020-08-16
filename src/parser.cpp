@@ -19,12 +19,12 @@ void Parser::synchronize()
 
     while (!isAtEnd())
     {
-        if (previous()->type() == TokenType::SEMICOLON)
+        if (previous().type() == TokenType::SEMICOLON)
         {
             return;
         }
 
-        switch (peek()->type())
+        switch (peek().type())
         {
         case TokenType::CLASS:
         case TokenType::FUN:
@@ -44,14 +44,15 @@ void Parser::synchronize()
 
 std::unique_ptr<Statement> Parser::declaration()
 {
-    try{
-        if(match({TokenType::VAR}))
+    try
+    {
+        if (match({TokenType::VAR}))
         {
             return varDeclaration();
         }
         return statement();
-
-    } catch (ParseError &error)
+    }
+    catch (ParseError& error)
     {
         synchronize();
         return nullptr;
@@ -86,15 +87,20 @@ std::unique_ptr<Statement> Parser::varDeclaration()
 {
     auto name = consume(TokenType::IDENTIFIER, "Expect variable name.");
     std::unique_ptr<Expression> initializer;
-    if (match({TokenType::EQUAL})) {
+    if (match({TokenType::EQUAL}))
+    {
         initializer = expression();
     }
 
     consume(TokenType::SEMICOLON, "Expect ';' after variable declaration.");
-    return std::make_unique<StatementVariable>(std::move(name), std::move(initializer));
+    return std::make_unique<StatementVariable>(std::make_unique<Token>(name),
+                                               std::move(initializer));
 }
 
-std::unique_ptr<Expression> Parser::expression() { return equality(); }
+std::unique_ptr<Expression> Parser::expression()
+{
+    return equality();
+}
 
 std::unique_ptr<Expression> Parser::equality()
 {
@@ -104,8 +110,8 @@ std::unique_ptr<Expression> Parser::equality()
     {
         auto oper = previous();
         auto right = comparison();
-        expr =
-            std::make_unique<ExpressionBinary>(std::move(expr), std::move(oper), std::move(right));
+        expr = std::make_unique<ExpressionBinary>(std::move(expr), std::make_unique<Token>(oper),
+                                                  std::move(right));
     }
 
     return expr;
@@ -120,8 +126,8 @@ std::unique_ptr<Expression> Parser::comparison()
     {
         auto oper = previous();
         auto right = addition();
-        expr =
-            std::make_unique<ExpressionBinary>(std::move(expr), std::move(oper), std::move(right));
+        expr = std::make_unique<ExpressionBinary>(std::move(expr), std::make_unique<Token>(oper),
+                                                  std::move(right));
     }
 
     return expr;
@@ -133,12 +139,14 @@ std::unique_ptr<Expression> Parser::addition()
 
     while (match({TokenType::MINUS, TokenType::PLUS}))
     {
+        spdlog::info("Combining additions...");
         auto oper = previous();
         auto right = multiplication();
-        expr =
-            std::make_unique<ExpressionBinary>(std::move(expr), std::move(oper), std::move(right));
+        expr = std::make_unique<ExpressionBinary>(std::move(expr), std::make_unique<Token>(oper),
+                                                  std::move(right));
     }
 
+    spdlog::info("Additions combined!");
     return expr;
 }
 
@@ -150,8 +158,8 @@ std::unique_ptr<Expression> Parser::multiplication()
     {
         auto oper = previous();
         auto right = unary();
-        expr =
-            std::make_unique<ExpressionBinary>(std::move(expr), std::move(oper), std::move(right));
+        expr = std::make_unique<ExpressionBinary>(std::move(expr), std::make_unique<Token>(oper),
+                                                  std::move(right));
     }
 
     return expr;
@@ -163,7 +171,7 @@ std::unique_ptr<Expression> Parser::unary()
     {
         auto oper = previous();
         auto right = unary();
-        return std::make_unique<ExpressionUnary>(std::move(oper), std::move(right));
+        return std::make_unique<ExpressionUnary>(std::make_unique<Token>(oper), std::move(right));
     }
 
     return primary();
@@ -173,29 +181,36 @@ std::unique_ptr<Expression> Parser::primary()
 {
     if (match({TokenType::FALSE}))
     {
+        spdlog::info("Found primary expression false");
         return std::make_unique<ExpressionLiteral>(std::make_unique<LiteralVal>(false));
     }
     if (match({TokenType::TRUE}))
     {
+        spdlog::info("Found primary expression true");
         return std::make_unique<ExpressionLiteral>(std::make_unique<LiteralVal>(true));
     }
     if (match({TokenType::NIL}))
     {
+        spdlog::info("Found primary expression nil");
         return std::make_unique<ExpressionLiteral>(std::make_unique<LiteralVal>());
     }
 
     if (match({TokenType::NUMBER, TokenType::STRING}))
     {
+        spdlog::info("Found primary expression string or number {}", previous().repr());
         return std::make_unique<ExpressionLiteral>(
-            std::make_unique<LiteralVal>(previous()->literal()));
+            std::make_unique<LiteralVal>(previous().literal()));
     }
 
-    if (match({TokenType::IDENTIFIER})) {
-        return std::make_unique<ExpressionVariable>(previous());
+    if (match({TokenType::IDENTIFIER}))
+    {
+        spdlog::info("Found primary expression identifier");
+        return std::make_unique<ExpressionVariable>(std::make_unique<Token>(previous()));
     }
 
     if (match({TokenType::LEFT_PAREN}))
     {
+        spdlog::info("Found primary expression left paren");
         auto expr = expression();
         consume(TokenType::RIGHT_PAREN, "Expect ')' after expression.");
         return std::make_unique<ExpressionGrouping>(std::move(expr));
@@ -204,7 +219,7 @@ std::unique_ptr<Expression> Parser::primary()
     throw(error(peek(), "Expect expression."));
 }
 
-bool Parser::match(std::vector<TokenType>&& types)
+bool Parser::match(const std::vector<TokenType>&& types)
 {
     for (auto type : types)
     {
@@ -223,9 +238,9 @@ bool Parser::check(TokenType type)
     {
         return false;
     }
-    return peek()->type() == type;
+    return peek().type() == type;
 }
-std::unique_ptr<Token> Parser::advance()
+const Token& Parser::advance()
 {
     if (!isAtEnd())
     {
@@ -234,19 +249,22 @@ std::unique_ptr<Token> Parser::advance()
     return previous();
 }
 
-bool Parser::isAtEnd() const { return peek()->type() == TokenType::END_OF_FILE; }
-
-std::unique_ptr<Token> Parser::peek() const
+bool Parser::isAtEnd() const
 {
-    return std::make_unique<Token>(m_tokens.at(m_current));
+    return peek().type() == TokenType::END_OF_FILE;
 }
 
-std::unique_ptr<Token> Parser::previous() const
+const Token& Parser::peek() const
 {
-    return std::make_unique<Token>(m_tokens.at(m_current - 1));
+    return m_tokens.at(m_current);
 }
 
-std::unique_ptr<Token> Parser::consume(TokenType type, const std::string& message)
+const Token& Parser::previous() const
+{
+    return m_tokens.at(m_current - 1);
+}
+
+const Token& Parser::consume(TokenType type, const std::string& message)
 {
     if (check(type))
     {
@@ -256,16 +274,16 @@ std::unique_ptr<Token> Parser::consume(TokenType type, const std::string& messag
     throw(error(peek(), message));
 }
 
-ParseError Parser::error(std::unique_ptr<Token> token, const std::string& message)
+ParseError Parser::error(const Token& token, const std::string& message)
 {
     // TODO Feed this up to other logging function and make it like original Java
-    if (token->type() == TokenType::END_OF_FILE)
+    if (token.type() == TokenType::END_OF_FILE)
     {
-        spdlog::error(" line {} at end {}", token->line(), message);
+        spdlog::error(" line {} at end {}", token.line(), message);
     }
     else
     {
-        spdlog::error(" {} at '{}' {}", token->line(), token->lexeme(), message);
+        spdlog::error(" {} at '{}' {}", token.line(), token.lexeme(), message);
     }
 
     return ParseError(message);

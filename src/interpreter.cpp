@@ -1,13 +1,19 @@
 #include "interpreter.hpp"
 
 #include <spdlog/spdlog.h>
-namespace KeegMake
-{
-std::unique_ptr<LiteralVal> Interpreter::evaluate(const Expression& expression) const
-{
-    (void)expression;
 
-    return expression.accept(*this);
+#include <cassert>
+namespace Lox
+{
+std::unique_ptr<LiteralVal> Interpreter::evaluate(const Expression* expression) const
+{
+    if (expression)
+    {
+        return expression->accept(*this);
+    }
+    // TODO: I think this is the right thing to do, not sure though
+    spdlog::error("Evaluating a nullptr expression, wtf?");
+    return nullptr;
 }
 
 void Interpreter::interpret(std::vector<std::unique_ptr<const Statement>>&& program)
@@ -21,6 +27,8 @@ void Interpreter::interpret(std::vector<std::unique_ptr<const Statement>>&& prog
     }
     catch (RuntimeError& error)
     {
+        spdlog::error(error.what());
+        spdlog::error("Error found on line {} token {}", error.token().line(), error.token().lexeme());
     }
 }
 void Interpreter::visitStatementExpression(const StatementExpression& statement) const
@@ -36,14 +44,14 @@ void Interpreter::visitStatementPrint(const StatementPrint& statement) const
 
 void Interpreter::visitStatementVariable(const StatementVariable& statement) const
 {
-    // TODO: This could be null in theory, but my program would fail first.
-    // Should fix that
-    //if (statement.initializer()) {
+    std::unique_ptr<LiteralVal> value;
+    assert(statement.name() != nullptr);
+    if (statement.initializer())
+    {
+        value = evaluate(statement.initializer());
+    }
 
-    //}
-    auto value = evaluate(statement.initializer());
-
-    m_environment->define(statement.name().lexeme(), std::move(value));
+    m_environment->define(statement.name()->lexeme(), std::move(value));
 }
 std::unique_ptr<LiteralVal> Interpreter::visitExpressionBinary(
     const ExpressionBinary& expression) const
@@ -51,23 +59,23 @@ std::unique_ptr<LiteralVal> Interpreter::visitExpressionBinary(
     auto right = evaluate(expression.right());
     auto left = evaluate(expression.left());
 
-    switch (expression.token().type())
+    switch (expression.token()->type())
     {
     case TokenType::MINUS:
     {
-        checkNumberOperands(expression.token(), *left, *right);
+        checkNumberOperands(*expression.token(), *left, *right);
         auto result = getLiteral<double>(*left) - getLiteral<double>(*right);
         return std::make_unique<LiteralVal>(result);
     }
     case TokenType::SLASH:
     {
-        checkNumberOperands(expression.token(), *left, *right);
+        checkNumberOperands(*expression.token(), *left, *right);
         auto result = getLiteral<double>(*left) / getLiteral<double>(*right);
         return std::make_unique<LiteralVal>(result);
     }
     case TokenType::STAR:
     {
-        checkNumberOperands(expression.token(), *left, *right);
+        checkNumberOperands(*expression.token(), *left, *right);
         auto result = getLiteral<double>(*left) * getLiteral<double>(*right);
         return std::make_unique<LiteralVal>(result);
     }
@@ -83,29 +91,29 @@ std::unique_ptr<LiteralVal> Interpreter::visitExpressionBinary(
             auto result = getLiteral<std::string>(*left) + getLiteral<std::string>(*right);
             return std::make_unique<LiteralVal>(result);
         }
-        throw(RuntimeError(expression.token(), "Operands must be two numbers or two strings."));
+        throw(RuntimeError(*expression.token(), "Operands must be two numbers or two strings."));
     }
     case TokenType::GREATER:
     {
-        checkNumberOperands(expression.token(), *left, *right);
+        checkNumberOperands(*expression.token(), *left, *right);
         bool result = (getLiteral<double>(*left) > getLiteral<double>(*right));
         return std::make_unique<LiteralVal>(result);
     }
     case TokenType::GREATER_EQUAL:
     {
-        checkNumberOperands(expression.token(), *left, *right);
+        checkNumberOperands(*expression.token(), *left, *right);
         bool result = (getLiteral<double>(*left) >= getLiteral<double>(*right));
         return std::make_unique<LiteralVal>(result);
     }
     case TokenType::LESS:
     {
-        checkNumberOperands(expression.token(), *left, *right);
+        checkNumberOperands(*expression.token(), *left, *right);
         bool result = (getLiteral<double>(*left) < getLiteral<double>(*right));
         return std::make_unique<LiteralVal>(result);
     }
     case TokenType::LESS_EQUAL:
     {
-        checkNumberOperands(expression.token(), *left, *right);
+        checkNumberOperands(*expression.token(), *left, *right);
         bool result = (getLiteral<double>(*left) <= getLiteral<double>(*right));
         return std::make_unique<LiteralVal>(result);
     }
@@ -131,7 +139,7 @@ std::unique_ptr<LiteralVal> Interpreter::visitExpressionLiteral(
     const ExpressionLiteral& expression) const
 {
     // TODO : Check against nullptr. Not sure what to do if we see one at the moment
-    return std::make_unique<LiteralVal>(expression.value());
+    return std::make_unique<LiteralVal>(*expression.value());
 }
 
 std::unique_ptr<LiteralVal> Interpreter::visitExpressionUnary(
@@ -139,10 +147,10 @@ std::unique_ptr<LiteralVal> Interpreter::visitExpressionUnary(
 {
     auto right = evaluate(expression.right());
 
-    switch (expression.token().type())
+    switch (expression.token()->type())
     {
     case TokenType::MINUS:
-        checkNumberOperand(expression.token(), *right);
+        checkNumberOperand(*expression.token(), *right);
         return std::make_unique<LiteralVal>(-(getLiteral<double>(*right)));
     case TokenType::BANG:
         return isTruthy(*right);
@@ -156,7 +164,10 @@ std::unique_ptr<LiteralVal> Interpreter::visitExpressionUnary(
 std::unique_ptr<LiteralVal> Interpreter::visitExpressionVariable(
     const ExpressionVariable& expression) const
 {
-    return m_environment->get(expression.name());
+    const auto& varname = expression.name();
+    spdlog::info("Reading variable {}", varname->lexeme());
+    auto val = m_environment->get(*varname);
+    return std::make_unique<LiteralVal>(val);
 }
 std::unique_ptr<LiteralVal> Interpreter::isTruthy(const LiteralVal& lval)
 {

@@ -26,7 +26,6 @@ private:
     std::unique_ptr<Statement> expressionStatement();
     std::unique_ptr<Statement> varDeclaration();
 
-
     std::unique_ptr<Expression> expression();
 
     std::unique_ptr<Expression> equality();
@@ -35,16 +34,16 @@ private:
     std::unique_ptr<Expression> multiplication();
     std::unique_ptr<Expression> unary();
     std::unique_ptr<Expression> primary();
-    bool match(std::vector<TokenType>&& types);
+    bool match(const std::vector<TokenType>&& types);
     bool check(TokenType type);
 
-    bool isAtEnd() const;
-    std::unique_ptr<Token> advance();
-    [[nodiscard]] std::unique_ptr<Token> peek() const;
-    [[nodiscard]] std::unique_ptr<Token> previous() const;
-    std::unique_ptr<Token> consume(TokenType type, const std::string& message);
+    [[nodiscard]] bool isAtEnd() const;
+    const Token& advance();
+    [[nodiscard]] const Token& peek() const;
+    [[nodiscard]] const Token& previous() const;
+    const Token& consume(TokenType type, const std::string& message);
 
-    static ParseError error(std::unique_ptr<Token> token, const std::string& message);
+    static ParseError error(const Token& token, const std::string& message);
 
     const std::vector<Token> m_tokens;
     int m_current = 0;

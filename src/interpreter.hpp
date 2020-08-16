@@ -1,9 +1,10 @@
 #pragma once
+#include <utility>
+
+#include "environment.hpp"
 #include "exception.hpp"
 #include "expression_ast.hpp"
 #include "statement_ast.hpp"
-#include "environment.hpp"
-#include <utility>
 namespace Lox
 {
 class RuntimeError : public BaseException
@@ -25,8 +26,8 @@ private:
 class Interpreter : public ExpressionVisitorLiteralVal, public StatementVisitorVoid
 {
 public:
-    Interpreter():m_environment(std::make_unique<Environment>()){}
-    [[nodiscard]] std::unique_ptr<LiteralVal> evaluate(const Expression& expression) const;
+    Interpreter() : m_environment(std::make_unique<Environment>()) {}
+    [[nodiscard]] std::unique_ptr<LiteralVal> evaluate(const Expression* expression) const;
 
     void interpret(std::vector<std::unique_ptr<const Statement>>&& program);
 

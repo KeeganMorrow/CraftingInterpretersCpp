@@ -1,4 +1,6 @@
 #pragma once
+#include <spdlog/spdlog.h>
+
 #include <memory>
 #include <utility>
 #include <variant>
@@ -26,8 +28,8 @@ public:
     }
     friend LiteralVal;
 
-protected:
     NilLiteral() = default;
+    NilLiteral(const NilLiteral &other) = default;
 };
 
 using LiteralVariant = std::variant<double, bool, std::string, NilLiteral>;
@@ -39,7 +41,7 @@ public:
     LiteralVal(double value) : m_value(value) {}
     LiteralVal(bool value) : m_value(value) {}
     LiteralVal() : m_value(NilLiteral()) {}
-    LiteralVal(const LiteralVal &) = default;
+    LiteralVal(const LiteralVal &other) = default;
 
     bool operator==(const LiteralVal &other) const { return m_value == other.m_value; }
 
@@ -63,6 +65,7 @@ public:
         {
             return LiteralValType::Nil;
         }
+        spdlog::error("LiteralVal type() requested but is invalid, index is {}", m_value.index());
         // TODO: Use better exception
         throw(std::exception());
     }
@@ -89,6 +92,9 @@ public:
         {
             return "nil";
         }
+
+        spdlog::error("LiteralVal repr() requested but is invalid, index is this is {:p}",
+                      (void *)this);
         throw(std::exception());
     }
     template <typename T>

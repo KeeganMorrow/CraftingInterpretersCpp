@@ -19,7 +19,7 @@ std::vector<Token>& Scanner::scanTokens()
     };
 
     m_tokens.emplace_back(
-        Token{TokenType::END_OF_FILE, std::string(""), std::make_unique<LiteralVal>(), m_line});
+        Token{TokenType::END_OF_FILE, std::string(), std::make_unique<LiteralVal>(), m_line});
     return m_tokens;
 }
 

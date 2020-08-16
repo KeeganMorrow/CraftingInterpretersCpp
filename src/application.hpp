@@ -27,5 +27,6 @@ public:
 private:
     bool m_hadError{false};
     const std::vector<std::string> m_args;
+    Interpreter m_interpreter;
 };
 }  // namespace Lox

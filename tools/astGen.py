@@ -182,7 +182,7 @@ def defineType(w, basename, type, returntypes):
 
     for field in type.fields:
         w.write(
-            "[[nodiscard]]virtual const {type} &{identifier}() const{{ return *({member_name}.get()); }}"
+            "[[nodiscard]]virtual const {type} *{identifier}() const{{ return {member_name}.get(); }}"
             .format(type=field.type,
                     identifier=field.identifier,
                     member_name=field.member_name()))

@@ -1,92 +1,25 @@
 #!/usr/bin/env python3
 import sys
 import argparse
+import abc
+import enum
 import os
-import datetime
 
 
-class Field:
-    def __init__(self, identifier, type):
-        self.identifier = identifier
-        self.type = type
-
-    def label(self):
-        return self.type.lower()
-
-    def member_type(self):
-        return "std::unique_ptr<const {}>".format(self.type)
-
-    def __repr__(self):
-        return '{{name: {}, type: {} }}'.format(self.identifier, self.type)
-
-    def member_name(self):
-        return "m_{}".format(str.lower(self.identifier))
-
-
-class Class:
-    def __init__(self, name, fields, basename):
-        self.name = name
-        self.fields = fields
-        self.basename = basename
-
-    def __repr__(self):
-        return '{{name: {}, fields: {} }}'.format(self.name, self.fields)
-
-    def className(self):
-        return '{}{}'.format(self.basename, self.name)
-
-    def visitor_function_name(self):
-        return "visit{}".format(self.className())
-
-    def reference_type(self):
-        return "const {}&".format(self.className())
-
-
-class ReturnType:
-    def __init__(self, name, type):
-        self.name = name
-        self.type = type
-
-    def field_name(self):
-        return str.lower(self.name)
-
-    def qualifiers(self):
-        if "void" in self.type:
-            return "virtual"
-        return "[[nodiscard]] virtual"
-
-
-def parseFields(types, basename):
-    classes = []
-    for type in types:
-        print("Looking at class {}".format(type))
-        classname = type.split("|")[0].strip()
-        strfields = type.split("|")[1].strip()
-        fields = []
-        for field in strfields.split(", "):
-            name = field.split(" ")[1]
-            type = field.split(" ")[0]
-            fields.append(Field(name, type))
-        classes.append(Class(classname, fields, basename))
-    import pprint
-    pprint.pprint(classes)
-
-    return classes
-
-
-class Writer:
-    def __init__(self, filepath, indentspaces=4):
-        self.filepath = filepath
+class Writer(abc.ABC):
+    def __init__(self, indentspaces=4):
         self.file = None
         self.indentlevel = 0
         self.indentspaces = 4
 
     def open(self):
-        self.file = open(self.filepath, 'w')
+        pass
 
     def close(self):
-        if self.file:
-            self.file.close()
+        pass
+
+    def _do_write(self, line):
+        pass
 
     def decrease(self):
         self.indentlevel = self.indentlevel - 1
@@ -103,134 +36,282 @@ class Writer:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-    def write(self, line):
+    def write(self, line=""):
         if line:
-            self.file.write("{}{}\n".format(
+            self._do_write("{}{}\n".format(
                 self.indentlevel * self.indentspaces * ' ', line))
         else:
-            self.file.write('\n')
+            self._do_write('\n')
 
 
-def defineVisitor(w, basename, returntypes, types):
-    for returntype in returntypes:
-        w.write("class {}Visitor{} {{".format(basename, returntype.name))
+class FileWriter(Writer):
+    def __init__(self, filepath, indentspaces=4):
+        super().__init__(indentspaces)
+        self.filepath = filepath
+        self.file = None
+
+    def open(self):
+        self.file = open(self.filepath, 'w')
+
+    def close(self):
+        if self.file:
+            self.file.close()
+
+    def _do_write(self, line):
+        self.file.write(line)
+
+
+class StdoutWriter(Writer):
+    def _do_write(self, line):
+        print(line, end='')
+
+
+class ValType(enum.Enum):
+    VALUE = 1
+    UNIQUE_PTR = 2
+    REFERENCE = 3
+
+
+class MemberVariable:
+    def __init__(self, name, type, val_type):
+        self.name = name
+        self.type = type
+        self.val_type = val_type
+
+    @property
+    def membername(self):
+        return f"m_{self.name}".format().lower()
+
+    @property
+    def localname(self):
+        return f"{self.name}".format().lower()
+
+    @property
+    def gettername(self):
+        return f"get{self.name}".format()
+
+
+class AstVisitor:
+    def __init__(self, base, name, ret):
+        self.base = base
+        self.name = name
+        self.ret = ret
+
+    @property
+    def classname(self):
+        return f"{self.base.classname}Visitor{self.name}".format()
+
+
+class AstBase:
+    def __init__(self, classname):
+        self.classname = classname
+        self.inherited = []
+        self.visitors = []
+
+    def addInherited(self, name, members):
+        self.inherited.append(AstInherited(self, name, members))
+
+    def addVisitor(self, name, ret):
+        self.visitors.append(AstVisitor(self, name, ret))
+
+
+class AstInherited:
+    def __init__(self, base, name, members):
+        self.base = base
+        self.name = name
+        self.members = members
+
+    @property
+    def classname(self):
+        return "{}{}".format(self.base.classname, self.name)
+
+    @property
+    def visitmethodname(self):
+        return f"visit{self.classname}".format()
+
+
+def declare_inherited_prototypes(w, base):
+    for inh in base.inherited:
+        w.write(f"class {inh.classname};".format())
+
+
+def declare_visitors(w, base):
+    for v in base.visitors:
+        w.write(f"class {v.classname}".format() + "{")
         w.write("public:")
         w.increase()
-        if "void" in returntype.type:
-            qualifiers = "virtual"
-        else:
-            qualifiers = "[[nodiscard]] virtual"
-        for type in types:
-
+        for inh in base.inherited:
             w.write(
-                "{qualifiers} {returntype} {visitor_function_name}({typename} {basename_lower}) = 0;"
-                .format(qualifiers=qualifiers,
-                        returntype=returntype.type,
-                        visitor_function_name=type.visitor_function_name(),
-                        typename=type.reference_type(),
-                        basename_lower=basename.lower()))
-
+                f"virtual {v.ret} visit{inh.classname}({inh.classname}&) = 0;".
+                format())
         w.decrease()
         w.write("};")
-        w.write("")
 
 
-def defineType(w, basename, type, returntypes):
-    w.write("class {} : public {} {{".format(type.className(), basename))
-    w.write("public:")
-    w.increase()
-
-    for returntype in returntypes:
-        if "void" in returntype.type:
-            qualifiers = ""
+def declare_inherited(w, base):
+    def define_constructor():
+        args = ""
+        for m in inh.members:
+            if m.val_type == ValType.VALUE:
+                args = args + f"{m.type} {m.localname}"
+            elif m.val_type == ValType.REFERENCE:
+                args = args + f"{m.type} &{m.localname}"
+            elif m.val_type == ValType.UNIQUE_PTR:
+                args = args + f"std::unique_ptr<{m.type}> &&{m.localname}"
+            if not m is inh.members[-1]:
+                args = args + ', '
+        # Don't use these constructors for implicit conversions
+        if (len(inh.members) == 1):
+            qualifiers = "explicit "
         else:
-            qualifiers = "[[nodiscard]]"
-        w.write(
-            "{qualifiers} {type} accept({basename}Visitor{name} &visitor) const override {{"
-            .format(basename=basename,
-                    qualifiers=qualifiers,
-                    type=returntype.type,
-                    name=returntype.name))
+            qualifiers = ""
+        w.write(f"{qualifiers}{inh.classname}({args}):".format())
         w.increase()
-        w.write("return visitor.{}(*this);".format(
-            type.visitor_function_name()))
+        for m in inh.members:
+            if not m is inh.members[-1]:
+                lineend = ','
+            else:
+                lineend = '{}'
+            if m.val_type == ValType.REFERENCE:
+                w.write(f"{m.membername}({m.localname})".format() + lineend)
+            elif m.val_type == ValType.UNIQUE_PTR or m.val_type == ValType.VALUE:
+                w.write(f"{m.membername}(std::move({m.localname}))".format() +
+                        lineend)
+        w.decrease()
+
+    def define_copy_constructor():
+        w.write(f"{inh.classname}(const {inh.classname}& other)".format() +
+                ":")
+        w.increase()
+        for m in inh.members:
+            if not m is inh.members[-1]:
+                lineend = ','
+            else:
+                lineend = '{}'
+
+            if m.val_type == ValType.VALUE or m.val_type == ValType.REFERENCE:
+                w.write(f"{m.membername}(other.{m.membername})".format() +
+                        lineend)
+            elif m.val_type == ValType.UNIQUE_PTR:
+                w.write(
+                    f"{m.membername}(other.{m.membername}->clone())".format() +
+                    lineend)
+        w.decrease()
+
+    def define_clone():
+        w.write("// Method for allowing polymorphic copy")
+        w.write(
+            f"std::unique_ptr<{base.classname}> clone() override".format() +
+            "{")
+        w.increase()
+        args = ""
+        for m in inh.members:
+            if m.val_type == ValType.REFERENCE or m.val_type == ValType.VALUE:
+                args = args + f"{m.membername}"
+            if m.val_type == ValType.UNIQUE_PTR:
+                args = args + f"std::move({m.membername})"
+            if not m is inh.members[-1]:
+                args = args + ', '
+        w.write(f"return std::make_unique<{inh.classname}>({args});")
         w.decrease()
         w.write("}")
-        w.write("")
 
-    typed_fields = ""
-    for field in type.fields:
-        typed_fields = typed_fields + "{type} &&{name},".format(
-            type=field.member_type(), name=field.identifier)
-    if typed_fields[-1] == ',':
-        typed_fields = typed_fields[:-1]
+    def define_accepts():
+        w.write("// Visitor accept methods")
+        for v in base.visitors:
+            w.write(
+                f"{v.ret} accept({v.classname}& visitor) override".format() +
+                "{")
+            w.increase()
+            w.write(f"return visitor.{inh.visitmethodname}(*this);".format())
+            w.decrease()
+            w.write("}")
 
-    w.write("{}({}):".format(type.className(), typed_fields))
+    def define_accessors():
+        w.write("// Accessor functions")
+        for m in inh.members:
+            if (m.val_type == ValType.REFERENCE):
+                rtype = f"{m.type}&".format()
+                rexpr = m.membername
+            elif (m.val_type == ValType.VALUE):
+                rtype = m.type
+                rexpr = m.membername
+            elif (m.val_type == ValType.UNIQUE_PTR):
+                rtype = f"{m.type}*".format()
+                rexpr = f"{m.membername}.get()".format()
+            w.write(f"{rtype} {m.gettername}()".format() + "{")
+            w.increase()
+            w.write(f"return {rexpr};".format())
+            w.decrease()
+            w.write("}")
+
+    def define_member_vars():
+        for mem in inh.members:
+            if (mem.val_type == ValType.REFERENCE
+                    or mem.val_type == ValType.VALUE):
+                w.write(f"{mem.type} {mem.membername};".format())
+            elif (mem.val_type == ValType.UNIQUE_PTR):
+                w.write(
+                    f"std::unique_ptr<{mem.type}> {mem.membername};".format())
+
+    for inh in base.inherited:
+        w.write(f"class {inh.classname} : public {base.classname}".format() +
+                "{")
+        w.write("public:")
+        w.increase()
+        w.write("// Constructors")
+        define_constructor()
+        define_copy_constructor()
+        w.write()
+        w.write("// Destructor")
+        # Virtual destructor
+        w.write(f"~{inh.classname}() override = default;".format())
+        w.write()
+        # Clone method
+        define_clone()
+        w.write()
+        # Accept methods
+        define_accepts()
+        w.write()
+        # Accessor methods
+        define_accessors()
+        w.write()
+        w.decrease()
+        w.write("private:")
+        w.increase()
+        # Member variables
+        define_member_vars()
+        w.decrease()
+        w.write("};")
+
+
+def declare_baseclass(w, base):
+    w.write(f"class {base.classname}".format() + "{")
+    w.write("public:")
     w.increase()
-    for field in type.fields:
-        if field is type.fields[-1]:
-            lineending = '{}'
-        else:
-            lineending = ','
-        w.write("{}(std::move({})){}".format(field.member_name(),
-                                             field.identifier, lineending))
-
-    w.decrease()
-    w.write("")
-    # Virtual destructor
-    w.write("~{}() override = default;".format(type.className()))
-
-    for field in type.fields:
-        w.write(
-            "[[nodiscard]]virtual const {type} *{identifier}() const{{ return {member_name}.get(); }}"
-            .format(type=field.type,
-                    identifier=field.identifier,
-                    member_name=field.member_name()))
-        w.write("")
-
-    w.write("")
-    w.write("private:")
-    for field in type.fields:
-        w.write("{type} {name};".format(type=field.member_type(),
-                                        name=field.member_name()))
-
+    w.write(f"{base.classname}() = default;".format())
+    w.write(f"{base.classname}(const {base.classname}&) = delete;".format())
+    w.write(f"virtual ~{base.classname}() = default;".format())
+    w.write()
+    w.write(f"virtual std::unique_ptr<{base.classname}> clone() = 0;".format())
+    w.write()
+    for v in base.visitors:
+        w.write(f"virtual {v.ret} accept({v.classname}&) = 0;".format())
     w.decrease()
     w.write("};")
 
 
-def defineAst(outputdir, fileheader, filename, basename, types, returntypes):
-    path = os.path.join(outputdir, filename + ".hpp")
-    with Writer(path) as w:
-        for line in fileheader:
-            w.write(line)
-        w.write("")
-        w.write("namespace lox {")
-        w.write("")
-        for type in types:
-            w.write("class {};".format(type.className()))
-        w.write("")
-        defineVisitor(w, basename, returntypes, types)
-        w.write("")
-        w.write("class {}{{".format(basename))
-        w.write("public:")
-        w.increase()
-        w.write("virtual ~{}() = default;".format(basename))
-        w.write("")
-        for returntype in returntypes:
-            if "void" in returntype.type:
-                qualifiers = "virtual"
-            else:
-                qualifiers = "[[nodiscard]] virtual"
-            w.write("{} {} accept({}Visitor{}&) const = 0;".format(
-                qualifiers, returntype.type, basename, returntype.name))
-        w.decrease()
-        w.write("};")
-        w.write("")
+def file_header(w, includes, namespace):
+    w.write("#pragma once")
+    w.write()
+    for i in includes:
+        w.write("#include " + i)
+    w.write()
+    w.write("namespace {} {{".format(namespace))
 
-        for type in types:
-            defineType(w, basename, type, returntypes)
 
-        w.write("} //namespace lox")
+def file_footer(w, namespace):
+    w.write("}} //namespace {}".format(namespace))
 
 
 def main():
@@ -238,42 +319,81 @@ def main():
     parser.add_argument('output_directory')
     args = parser.parse_args()
     print("Output directory is {}".format(args.output_directory))
-    expression_types = [
-        "Assign | Token name, Expression value",
-        "Binary | Expression left, Token token, Expression right",
-        "Grouping | Expression expression",
-        "Literal | LiteralVal value",
-        "Unary | Token token, Expression right",
-        "Variable | Token name",
+
+    expression_includes = [
+        '"literal.hpp"', '"token.hpp"', '<memory>', '<utility>'
     ]
-    # TODO: This is some really gross stuff going on here in the organization
-    statement_types = [
-        "Expression | Expression expression left",
-        "Print | Expression expression",
-        "Variable | Token name, Expression initializer",
+
+    # Set up the actual data we'll be using
+    expression_base = AstBase('Expression')
+    expression_base.addVisitor("LiteralVal", "std::unique_ptr<LiteralVal>")
+    expression_base.addVisitor("String", "std::string")
+    expression_base.addInherited('Assign', [
+        MemberVariable('Name', 'Token', ValType.VALUE),
+        MemberVariable('Value', 'Expression', ValType.UNIQUE_PTR)
+    ])
+    expression_base.addInherited('Binary', [
+        MemberVariable('Left', 'Expression', ValType.UNIQUE_PTR),
+        MemberVariable('Token', 'Token', ValType.VALUE),
+        MemberVariable('Right', 'Expression', ValType.UNIQUE_PTR)
+    ])
+    expression_base.addInherited(
+        'Grouping',
+        [MemberVariable('Expression', 'Expression', ValType.UNIQUE_PTR)])
+    expression_base.addInherited(
+        'Literal', [MemberVariable('Value', 'LiteralVal', ValType.VALUE)])
+    expression_base.addInherited('Unary', [
+        MemberVariable('Token', 'Token', ValType.VALUE),
+        MemberVariable('Expression', 'Expression', ValType.UNIQUE_PTR)
+    ])
+    expression_base.addInherited(
+        'Variable', [MemberVariable('Name', 'Token', ValType.VALUE)])
+
+    with FileWriter(os.path.join(args.output_directory,
+                                 "expression_ast.hpp")) as w:
+        file_header(w, expression_includes, "lox")
+        declare_inherited_prototypes(w, expression_base)
+        w.write()
+        declare_visitors(w, expression_base)
+        w.write()
+        declare_baseclass(w, expression_base)
+        w.write()
+        declare_inherited(w, expression_base)
+        w.write()
+        file_footer(w, "lox")
+
+    statement_includes = [
+        '"literal.hpp"', '"token.hpp"', '<memory>', '<utility>',
+        '"expression_ast.hpp"'
     ]
-    visitor_returns = [
-        ReturnType("Void", "void"),
-        ReturnType("String", "std::string"),
-        ReturnType("LiteralVal", "std::unique_ptr<LiteralVal>")
-    ]
-    file_header = [
-        "#pragma once",
-        "// This file generated by tools/astGen.py at {}".format(
-            datetime.datetime.now().isoformat()),
-        "#include \"literal.hpp\"",
-        "#include \"token.hpp\"",
-        "#include <memory>",
-    ]
-    basename_expression = "Expression"
-    basename_statement = "Statement"
-    defineAst(args.output_directory, file_header, 'expression_ast',
-              'Expression', parseFields(expression_types,
-                                        basename_expression), visitor_returns)
-    file_header.insert(3, '#include "expression_ast.hpp"')
-    defineAst(args.output_directory, file_header, 'statement_ast', 'Statement',
-              parseFields(statement_types, basename_statement),
-              visitor_returns)
+
+    # Set up the actual data we'll be using
+    statement_base = AstBase('Statement')
+    statement_base.addVisitor("Void", "void")
+    statement_base.addVisitor("String", "std::string")
+    statement_base.addInherited(
+        'Expression',
+        [MemberVariable('Expression', 'Expression', ValType.UNIQUE_PTR)])
+    statement_base.addInherited(
+        'Print',
+        [MemberVariable('Expression', 'Expression', ValType.UNIQUE_PTR)])
+    statement_base.addInherited('Variable', [
+        MemberVariable('Name', 'Token', ValType.VALUE),
+        MemberVariable('Initializer', 'Expression', ValType.UNIQUE_PTR),
+    ])
+
+    with FileWriter(os.path.join(args.output_directory,
+                                 "statement_ast.hpp")) as w:
+        file_header(w, statement_includes, "lox")
+        declare_inherited_prototypes(w, statement_base)
+        w.write()
+        declare_visitors(w, statement_base)
+        w.write()
+        declare_baseclass(w, statement_base)
+        w.write()
+        declare_inherited(w, statement_base)
+        w.write()
+        file_footer(w, "lox")
     return 0
 
 

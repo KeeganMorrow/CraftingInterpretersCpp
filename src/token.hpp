@@ -73,6 +73,7 @@ public:
           m_literal(std::make_unique<LiteralVal>(*other.m_literal))
     {
     }
+    Token(Token&& other) noexcept = default;
     [[nodiscard]] TokenType type() const { return m_type; }
     [[nodiscard]] std::string lexeme() const { return m_lexeme; }
     [[nodiscard]] int line() const { return m_line; }

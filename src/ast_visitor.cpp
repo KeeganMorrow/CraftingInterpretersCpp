@@ -5,33 +5,35 @@
 
 namespace lox
 {
-std::string AstPrinter::visitExpressionBinary(const ExpressionBinary& expression)
+std::string AstPrinter::visitExpressionBinary(ExpressionBinary& expression)
 {
-    std::vector<const Expression*> exp_vec{expression.left(), expression.right()};
-    return parenthesize(expression.token()->lexeme(), exp_vec);
+    std::vector<Expression*> exp_vec{expression.getLeft(), expression.getRight()};
+    return parenthesize(expression.getToken().lexeme(), exp_vec);
 }
-std::string AstPrinter::visitExpressionGrouping(const ExpressionGrouping& expression)
+std::string AstPrinter::visitExpressionGrouping(ExpressionGrouping& expression)
 {
-    return parenthesize("group", std::vector<const Expression*>{expression.expression()});
+    std::vector<Expression*> exp_vec{expression.getExpression()};
+    return parenthesize("group", exp_vec);
 }
-std::string AstPrinter::visitExpressionLiteral(const ExpressionLiteral& expression)
+std::string AstPrinter::visitExpressionLiteral(ExpressionLiteral& expression)
 {
-    assert(expression.value());
-    return expression.value()->repr();
+    assert(expression.getValue());
+    return expression.getValue().repr();
 }
-std::string AstPrinter::visitExpressionUnary(const ExpressionUnary& expression)
+std::string AstPrinter::visitExpressionUnary(ExpressionUnary& expression)
 {
-    return parenthesize(expression.token()->lexeme(),
-                        std::vector<const Expression*>{expression.right()});
+    std::vector<Expression*> exp_vec{expression.getExpression()};
+    return parenthesize(expression.getToken().lexeme(), exp_vec);
+    ;
 }
 
 std::string AstPrinter::parenthesize(const std::string& name,
-                                     const std::vector<const Expression*>& expressions)
+                                     const std::vector<Expression*>& expressions)
 {
     spdlog::trace("Parenthesizing {} with tokens", name);
     std::string result{"("};
     result.append(name);
-    for (const auto& expression : expressions)
+    for (auto* expression : expressions)
     {
         result.append(" ");
         result.append(expression->accept(*this));

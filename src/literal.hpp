@@ -42,6 +42,7 @@ public:
     explicit LiteralVal(bool value) : m_value(value) {}
     LiteralVal() = default;
     LiteralVal(const LiteralVal &other) = default;
+    LiteralVal(LiteralVal &&other) = default;
 
     bool operator==(const LiteralVal &other) const { return m_value == other.m_value; }
 

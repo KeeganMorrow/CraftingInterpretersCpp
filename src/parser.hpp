@@ -13,7 +13,7 @@ class Parser
 public:
     explicit Parser(std::vector<Token>&& tokens) : m_tokens(tokens) {}
 
-    std::vector<std::unique_ptr<const Statement>> parse();
+    std::vector<std::unique_ptr<Statement>> parse();
 
 private:
     void synchronize();

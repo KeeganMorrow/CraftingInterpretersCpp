@@ -27,28 +27,28 @@ class Interpreter : public ExpressionVisitorLiteralVal, public StatementVisitorV
 {
 public:
     Interpreter() : m_environment(std::make_unique<Environment>()) {}
-    [[nodiscard]] std::unique_ptr<LiteralVal> evaluate(const Expression* expression);
+    [[nodiscard]] std::unique_ptr<LiteralVal> evaluate(Expression* expression);
 
-    void interpret(std::vector<std::unique_ptr<const Statement>>&& program);
+    void interpret(std::vector<std::unique_ptr<Statement>>&& program);
 
 private:
-    void execute(std::unique_ptr<const Statement>&& statement) { statement->accept(*this); }
-    void visitStatementExpression(const StatementExpression& statement) override;
-    void visitStatementPrint(const StatementPrint& statement) override;
-    void visitStatementVariable(const StatementVariable& statement) override;
+    void execute(std::unique_ptr<Statement>&& statement) { statement->accept(*this); }
+    void visitStatementExpression(StatementExpression& statement) override;
+    void visitStatementPrint(StatementPrint& statement) override;
+    void visitStatementVariable(StatementVariable& statement) override;
 
     [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionAssign(
-        const ExpressionAssign& expression) override;
+        ExpressionAssign& expression) override;
     [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionBinary(
-        const ExpressionBinary& expression) override;
+        ExpressionBinary& expression) override;
     [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionGrouping(
-        const ExpressionGrouping& expression) override;
+        ExpressionGrouping& expression) override;
     [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionLiteral(
-        const ExpressionLiteral& expression) override;
+        ExpressionLiteral& expression) override;
     [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionUnary(
-        const ExpressionUnary& expression) override;
+        ExpressionUnary& expression) override;
     [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionVariable(
-        const ExpressionVariable& expression) override;
+        ExpressionVariable& expression) override;
 
     [[nodiscard]] static std::unique_ptr<LiteralVal> isTruthy(const LiteralVal& lval);
 

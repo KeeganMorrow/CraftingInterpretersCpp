@@ -5,7 +5,7 @@
 #include <cassert>
 namespace lox
 {
-std::unique_ptr<LiteralVal> Interpreter::evaluate(const Expression* expression)
+std::unique_ptr<LiteralVal> Interpreter::evaluate(Expression* expression)
 {
     if (expression != nullptr)
     {
@@ -16,7 +16,7 @@ std::unique_ptr<LiteralVal> Interpreter::evaluate(const Expression* expression)
     return nullptr;
 }
 
-void Interpreter::interpret(std::vector<std::unique_ptr<const Statement>>&& program)
+void Interpreter::interpret(std::vector<std::unique_ptr<Statement>>&& program)
 {
     try
     {
@@ -32,61 +32,61 @@ void Interpreter::interpret(std::vector<std::unique_ptr<const Statement>>&& prog
                       error.token().lexeme());
     }
 }
-void Interpreter::visitStatementExpression(const StatementExpression& statement)
+void Interpreter::visitStatementExpression(StatementExpression& statement)
 {
-    (void)evaluate(statement.expression());
+    (void)evaluate(statement.getExpression());
 }
 
-void Interpreter::visitStatementPrint(const StatementPrint& statement)
+void Interpreter::visitStatementPrint(StatementPrint& statement)
 {
-    auto value = evaluate(statement.expression());
+    auto value = evaluate(statement.getExpression());
     spdlog::info(value->repr());
 }
 
-void Interpreter::visitStatementVariable(const StatementVariable& statement)
+void Interpreter::visitStatementVariable(StatementVariable& statement)
 {
     std::unique_ptr<LiteralVal> value;
-    assert(statement.name() != nullptr);
-    if (statement.initializer() != nullptr)
+    assert(statement.getName() != nullptr);
+    if (statement.getInitializer() != nullptr)
     {
-        value = evaluate(statement.initializer());
+        value = evaluate(statement.getInitializer());
     }
 
-    m_environment->define(statement.name()->lexeme(), std::move(value));
+    m_environment->define(statement.getName().lexeme(), std::move(value));
 }
 
 [[nodiscard]] std::unique_ptr<LiteralVal> Interpreter::visitExpressionAssign(
-    const ExpressionAssign& expression)
+    ExpressionAssign& expression)
 {
-    auto value = evaluate(expression.value());
+    auto value = evaluate(expression.getValue());
 
     // Make a new copy of value here so that we can return the original
-    m_environment->assign(*(expression.name()), std::make_unique<LiteralVal>(*value));
+    m_environment->assign(expression.getName(), std::make_unique<LiteralVal>(*value));
     return value;
 }
 
-std::unique_ptr<LiteralVal> Interpreter::visitExpressionBinary(const ExpressionBinary& expression)
+std::unique_ptr<LiteralVal> Interpreter::visitExpressionBinary(ExpressionBinary& expression)
 {
-    auto right = evaluate(expression.right());
-    auto left = evaluate(expression.left());
+    auto right = evaluate(expression.getRight());
+    auto left = evaluate(expression.getLeft());
 
-    switch (expression.token()->type())
+    switch (expression.getToken().type())
     {
     case TokenType::MINUS:
     {
-        checkNumberOperands(*expression.token(), *left, *right);
+        checkNumberOperands(expression.getToken(), *left, *right);
         auto result = getLiteral<double>(*left) - getLiteral<double>(*right);
         return std::make_unique<LiteralVal>(result);
     }
     case TokenType::SLASH:
     {
-        checkNumberOperands(*expression.token(), *left, *right);
+        checkNumberOperands(expression.getToken(), *left, *right);
         auto result = getLiteral<double>(*left) / getLiteral<double>(*right);
         return std::make_unique<LiteralVal>(result);
     }
     case TokenType::STAR:
     {
-        checkNumberOperands(*expression.token(), *left, *right);
+        checkNumberOperands(expression.getToken(), *left, *right);
         auto result = getLiteral<double>(*left) * getLiteral<double>(*right);
         return std::make_unique<LiteralVal>(result);
     }
@@ -102,29 +102,29 @@ std::unique_ptr<LiteralVal> Interpreter::visitExpressionBinary(const ExpressionB
             auto result = getLiteral<std::string>(*left) + getLiteral<std::string>(*right);
             return std::make_unique<LiteralVal>(result);
         }
-        throw(RuntimeError(*expression.token(), "Operands must be two numbers or two strings."));
+        throw(RuntimeError(expression.getToken(), "Operands must be two numbers or two strings."));
     }
     case TokenType::GREATER:
     {
-        checkNumberOperands(*expression.token(), *left, *right);
+        checkNumberOperands(expression.getToken(), *left, *right);
         bool result = (getLiteral<double>(*left) > getLiteral<double>(*right));
         return std::make_unique<LiteralVal>(result);
     }
     case TokenType::GREATER_EQUAL:
     {
-        checkNumberOperands(*expression.token(), *left, *right);
+        checkNumberOperands(expression.getToken(), *left, *right);
         bool result = (getLiteral<double>(*left) >= getLiteral<double>(*right));
         return std::make_unique<LiteralVal>(result);
     }
     case TokenType::LESS:
     {
-        checkNumberOperands(*expression.token(), *left, *right);
+        checkNumberOperands(expression.getToken(), *left, *right);
         bool result = (getLiteral<double>(*left) < getLiteral<double>(*right));
         return std::make_unique<LiteralVal>(result);
     }
     case TokenType::LESS_EQUAL:
     {
-        checkNumberOperands(*expression.token(), *left, *right);
+        checkNumberOperands(expression.getToken(), *left, *right);
         bool result = (getLiteral<double>(*left) <= getLiteral<double>(*right));
         return std::make_unique<LiteralVal>(result);
     }
@@ -140,26 +140,25 @@ std::unique_ptr<LiteralVal> Interpreter::visitExpressionBinary(const ExpressionB
     return nullptr;
 }
 
-std::unique_ptr<LiteralVal> Interpreter::visitExpressionGrouping(
-    const ExpressionGrouping& expression)
+std::unique_ptr<LiteralVal> Interpreter::visitExpressionGrouping(ExpressionGrouping& expression)
 {
-    return evaluate(expression.expression());
+    return evaluate(expression.getExpression());
 }
 
-std::unique_ptr<LiteralVal> Interpreter::visitExpressionLiteral(const ExpressionLiteral& expression)
+std::unique_ptr<LiteralVal> Interpreter::visitExpressionLiteral(ExpressionLiteral& expression)
 {
     // TODO : Check against nullptr. Not sure what to do if we see one at the moment
-    return std::make_unique<LiteralVal>(*expression.value());
+    return std::make_unique<LiteralVal>(expression.getValue());
 }
 
-std::unique_ptr<LiteralVal> Interpreter::visitExpressionUnary(const ExpressionUnary& expression)
+std::unique_ptr<LiteralVal> Interpreter::visitExpressionUnary(ExpressionUnary& expression)
 {
-    auto right = evaluate(expression.right());
+    auto right = evaluate(expression.getExpression());
 
-    switch (expression.token()->type())
+    switch (expression.getToken().type())
     {
     case TokenType::MINUS:
-        checkNumberOperand(*expression.token(), *right);
+        checkNumberOperand(expression.getToken(), *right);
         return std::make_unique<LiteralVal>(-(getLiteral<double>(*right)));
     case TokenType::BANG:
         return isTruthy(*right);
@@ -170,12 +169,11 @@ std::unique_ptr<LiteralVal> Interpreter::visitExpressionUnary(const ExpressionUn
     return nullptr;
 }
 
-std::unique_ptr<LiteralVal> Interpreter::visitExpressionVariable(
-    const ExpressionVariable& expression)
+std::unique_ptr<LiteralVal> Interpreter::visitExpressionVariable(ExpressionVariable& expression)
 {
-    const auto& varname = expression.name();
-    spdlog::debug("Reading variable {}", varname->lexeme());
-    auto val = m_environment->get(*varname);
+    const auto& varname = expression.getName();
+    spdlog::debug("Reading variable {}", varname.lexeme());
+    auto val = m_environment->get(varname);
     return std::make_unique<LiteralVal>(val);
 }
 std::unique_ptr<LiteralVal> Interpreter::isTruthy(const LiteralVal& lval)

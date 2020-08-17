@@ -3,9 +3,9 @@
 #include <spdlog/spdlog.h>
 namespace lox
 {
-std::vector<std::unique_ptr<const Statement>> Parser::parse()
+std::vector<std::unique_ptr<Statement>> Parser::parse()
 {
-    std::vector<std::unique_ptr<const Statement>> statements;
+    std::vector<std::unique_ptr<Statement>> statements;
     while (!isAtEnd())
     {
         auto dec = declaration();
@@ -97,8 +97,7 @@ std::unique_ptr<Statement> Parser::varDeclaration()
     }
 
     consume(TokenType::SEMICOLON, "Expect ';' after variable declaration.");
-    return std::make_unique<StatementVariable>(std::make_unique<Token>(name),
-                                               std::move(initializer));
+    return std::make_unique<StatementVariable>(name, std::move(initializer));
 }
 
 std::unique_ptr<Expression> Parser::expression() { return assignment(); }
@@ -114,10 +113,9 @@ std::unique_ptr<Expression> Parser::assignment()
 
         if (auto* varexpr = dynamic_cast<ExpressionVariable*>(expr.get()))
         {
-            const auto* name = varexpr->name();
-            spdlog::debug("Found expression variable {}!", name->repr());
-            return std::make_unique<ExpressionAssign>(std::make_unique<Token>(*name),
-                                                      std::move(value));
+            auto name = varexpr->getName();
+            spdlog::debug("Found expression variable {}!", name.repr());
+            return std::make_unique<ExpressionAssign>(name, std::move(value));
         }
 
         throw error(equals, "Invalid assignment target");
@@ -133,8 +131,7 @@ std::unique_ptr<Expression> Parser::equality()
     {
         auto oper = previous();
         auto right = comparison();
-        expr = std::make_unique<ExpressionBinary>(std::move(expr), std::make_unique<Token>(oper),
-                                                  std::move(right));
+        expr = std::make_unique<ExpressionBinary>(std::move(expr), oper, std::move(right));
     }
 
     return expr;
@@ -149,8 +146,7 @@ std::unique_ptr<Expression> Parser::comparison()
     {
         auto oper = previous();
         auto right = addition();
-        expr = std::make_unique<ExpressionBinary>(std::move(expr), std::make_unique<Token>(oper),
-                                                  std::move(right));
+        expr = std::make_unique<ExpressionBinary>(std::move(expr), oper, std::move(right));
     }
 
     return expr;
@@ -165,8 +161,7 @@ std::unique_ptr<Expression> Parser::addition()
         spdlog::debug("Combining additions...");
         auto oper = previous();
         auto right = multiplication();
-        expr = std::make_unique<ExpressionBinary>(std::move(expr), std::make_unique<Token>(oper),
-                                                  std::move(right));
+        expr = std::make_unique<ExpressionBinary>(std::move(expr), oper, std::move(right));
     }
 
     spdlog::debug("Additions combined!");
@@ -181,8 +176,7 @@ std::unique_ptr<Expression> Parser::multiplication()
     {
         auto oper = previous();
         auto right = unary();
-        expr = std::make_unique<ExpressionBinary>(std::move(expr), std::make_unique<Token>(oper),
-                                                  std::move(right));
+        expr = std::make_unique<ExpressionBinary>(std::move(expr), oper, std::move(right));
     }
 
     return expr;
@@ -194,7 +188,7 @@ std::unique_ptr<Expression> Parser::unary()
     {
         auto oper = previous();
         auto right = unary();
-        return std::make_unique<ExpressionUnary>(std::make_unique<Token>(oper), std::move(right));
+        return std::make_unique<ExpressionUnary>(oper, std::move(right));
     }
 
     return primary();
@@ -205,30 +199,29 @@ std::unique_ptr<Expression> Parser::primary()
     if (match({TokenType::FALSE}))
     {
         spdlog::debug("Found primary expression false");
-        return std::make_unique<ExpressionLiteral>(std::make_unique<LiteralVal>(false));
+        return std::make_unique<ExpressionLiteral>(LiteralVal(false));
     }
     if (match({TokenType::TRUE}))
     {
         spdlog::debug("Found primary expression true");
-        return std::make_unique<ExpressionLiteral>(std::make_unique<LiteralVal>(true));
+        return std::make_unique<ExpressionLiteral>(LiteralVal(true));
     }
     if (match({TokenType::NIL}))
     {
         spdlog::debug("Found primary expression nil");
-        return std::make_unique<ExpressionLiteral>(std::make_unique<LiteralVal>());
+        return std::make_unique<ExpressionLiteral>(LiteralVal());
     }
 
     if (match({TokenType::NUMBER, TokenType::STRING}))
     {
         spdlog::debug("Found primary expression string or number {}", previous().repr());
-        return std::make_unique<ExpressionLiteral>(
-            std::make_unique<LiteralVal>(previous().literal()));
+        return std::make_unique<ExpressionLiteral>(previous().literal());
     }
 
     if (match({TokenType::IDENTIFIER}))
     {
         spdlog::debug("Found primary expression identifier");
-        return std::make_unique<ExpressionVariable>(std::make_unique<Token>(previous()));
+        return std::make_unique<ExpressionVariable>(previous());
     }
 
     if (match({TokenType::LEFT_PAREN}))

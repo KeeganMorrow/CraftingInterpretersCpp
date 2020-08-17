@@ -20,6 +20,11 @@ int Application::start()
 {
     int status{0};
 
+    if (std::getenv("VERBOSE") != nullptr)
+    {
+        spdlog::set_level(spdlog::level::trace);
+    }
+
     if (m_args.size() == 1)
     {
         status = runPrompt();

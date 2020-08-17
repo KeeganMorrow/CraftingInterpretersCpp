@@ -5,7 +5,7 @@
 #include <cassert>
 namespace lox
 {
-std::unique_ptr<LiteralVal> Interpreter::evaluate(const Expression* expression) const
+std::unique_ptr<LiteralVal> Interpreter::evaluate(const Expression* expression)
 {
     if (expression != nullptr)
     {
@@ -32,18 +32,18 @@ void Interpreter::interpret(std::vector<std::unique_ptr<const Statement>>&& prog
                       error.token().lexeme());
     }
 }
-void Interpreter::visitStatementExpression(const StatementExpression& statement) const
+void Interpreter::visitStatementExpression(const StatementExpression& statement)
 {
     (void)evaluate(statement.expression());
 }
 
-void Interpreter::visitStatementPrint(const StatementPrint& statement) const
+void Interpreter::visitStatementPrint(const StatementPrint& statement)
 {
     auto value = evaluate(statement.expression());
     spdlog::info(value->repr());
 }
 
-void Interpreter::visitStatementVariable(const StatementVariable& statement) const
+void Interpreter::visitStatementVariable(const StatementVariable& statement)
 {
     std::unique_ptr<LiteralVal> value;
     assert(statement.name() != nullptr);
@@ -56,7 +56,7 @@ void Interpreter::visitStatementVariable(const StatementVariable& statement) con
 }
 
 [[nodiscard]] std::unique_ptr<LiteralVal> Interpreter::visitExpressionAssign(
-    const ExpressionAssign& expression) const
+    const ExpressionAssign& expression)
 {
     auto value = evaluate(expression.value());
 
@@ -65,8 +65,7 @@ void Interpreter::visitStatementVariable(const StatementVariable& statement) con
     return value;
 }
 
-std::unique_ptr<LiteralVal> Interpreter::visitExpressionBinary(
-    const ExpressionBinary& expression) const
+std::unique_ptr<LiteralVal> Interpreter::visitExpressionBinary(const ExpressionBinary& expression)
 {
     auto right = evaluate(expression.right());
     auto left = evaluate(expression.left());
@@ -142,20 +141,18 @@ std::unique_ptr<LiteralVal> Interpreter::visitExpressionBinary(
 }
 
 std::unique_ptr<LiteralVal> Interpreter::visitExpressionGrouping(
-    const ExpressionGrouping& expression) const
+    const ExpressionGrouping& expression)
 {
     return evaluate(expression.expression());
 }
 
-std::unique_ptr<LiteralVal> Interpreter::visitExpressionLiteral(
-    const ExpressionLiteral& expression) const
+std::unique_ptr<LiteralVal> Interpreter::visitExpressionLiteral(const ExpressionLiteral& expression)
 {
     // TODO : Check against nullptr. Not sure what to do if we see one at the moment
     return std::make_unique<LiteralVal>(*expression.value());
 }
 
-std::unique_ptr<LiteralVal> Interpreter::visitExpressionUnary(
-    const ExpressionUnary& expression) const
+std::unique_ptr<LiteralVal> Interpreter::visitExpressionUnary(const ExpressionUnary& expression)
 {
     auto right = evaluate(expression.right());
 
@@ -174,7 +171,7 @@ std::unique_ptr<LiteralVal> Interpreter::visitExpressionUnary(
 }
 
 std::unique_ptr<LiteralVal> Interpreter::visitExpressionVariable(
-    const ExpressionVariable& expression) const
+    const ExpressionVariable& expression)
 {
     const auto& varname = expression.name();
     spdlog::debug("Reading variable {}", varname->lexeme());

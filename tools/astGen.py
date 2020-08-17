@@ -123,7 +123,7 @@ def defineVisitor(w, basename, returntypes, types):
         for type in types:
 
             w.write(
-                "{qualifiers} {returntype} {visitor_function_name}({typename} {basename_lower}) const = 0;"
+                "{qualifiers} {returntype} {visitor_function_name}({typename} {basename_lower}) = 0;"
                 .format(qualifiers=qualifiers,
                         returntype=returntype.type,
                         visitor_function_name=type.visitor_function_name(),
@@ -146,7 +146,7 @@ def defineType(w, basename, type, returntypes):
         else:
             qualifiers = "[[nodiscard]]"
         w.write(
-            "{qualifiers} {type} accept(const {basename}Visitor{name} &visitor) const override {{"
+            "{qualifiers} {type} accept({basename}Visitor{name} &visitor) const override {{"
             .format(basename=basename,
                     qualifiers=qualifiers,
                     type=returntype.type,
@@ -221,7 +221,7 @@ def defineAst(outputdir, fileheader, filename, basename, types, returntypes):
                 qualifiers = "virtual"
             else:
                 qualifiers = "[[nodiscard]] virtual"
-            w.write("{} {} accept(const {}Visitor{}&) const = 0;".format(
+            w.write("{} {} accept({}Visitor{}&) const = 0;".format(
                 qualifiers, returntype.type, basename, returntype.name))
         w.decrease()
         w.write("};")

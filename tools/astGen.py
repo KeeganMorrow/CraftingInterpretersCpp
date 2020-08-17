@@ -239,6 +239,7 @@ def main():
     args = parser.parse_args()
     print("Output directory is {}".format(args.output_directory))
     expression_types = [
+        "Assign | Token name, Expression value",
         "Binary | Expression left, Token token, Expression right",
         "Grouping | Expression expression",
         "Literal | LiteralVal value",

@@ -54,6 +54,17 @@ void Interpreter::visitStatementVariable(const StatementVariable& statement) con
 
     m_environment->define(statement.name()->lexeme(), std::move(value));
 }
+
+[[nodiscard]] std::unique_ptr<LiteralVal> Interpreter::visitExpressionAssign(
+    const ExpressionAssign& expression) const
+{
+    auto value = evaluate(expression.value());
+
+    // Make a new copy of value here so that we can return the original
+    m_environment->assign(*(expression.name()), std::make_unique<LiteralVal>(*value));
+    return value;
+}
+
 std::unique_ptr<LiteralVal> Interpreter::visitExpressionBinary(
     const ExpressionBinary& expression) const
 {

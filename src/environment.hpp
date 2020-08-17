@@ -13,8 +13,9 @@ class Environment
 public:
     Environment() = default;
     void define(std::string name, std::unique_ptr<LiteralVal> value);
+    void assign(const Token &token, std::unique_ptr<LiteralVal> value);
 
-    LiteralVal get(const Token &token);
+    [[nodiscard]] LiteralVal get(const Token &token) const;
 
 private:
     std::map<std::string, std::unique_ptr<LiteralVal>> m_values;

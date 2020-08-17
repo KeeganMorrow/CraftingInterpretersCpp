@@ -101,7 +101,29 @@ std::unique_ptr<Statement> Parser::varDeclaration()
                                                std::move(initializer));
 }
 
-std::unique_ptr<Expression> Parser::expression() { return equality(); }
+std::unique_ptr<Expression> Parser::expression() { return assignment(); }
+
+std::unique_ptr<Expression> Parser::assignment()
+{
+    auto expr = equality();
+
+    if (match({TokenType::EQUAL}))
+    {
+        auto equals = previous();
+        auto value = assignment();
+
+        if (auto* varexpr = dynamic_cast<ExpressionVariable*>(expr.get()))
+        {
+            const auto* name = varexpr->name();
+            spdlog::debug("Found expression variable {}!", name->repr());
+            return std::make_unique<ExpressionAssign>(std::make_unique<Token>(*name),
+                                                      std::move(value));
+        }
+
+        throw error(equals, "Invalid assignment target");
+    }
+    return expr;
+}
 
 std::unique_ptr<Expression> Parser::equality()
 {

@@ -37,6 +37,8 @@ private:
     void visitStatementPrint(const StatementPrint& statement) const override;
     void visitStatementVariable(const StatementVariable& statement) const override;
 
+    [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionAssign(
+        const ExpressionAssign& expression) const override;
     [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionBinary(
         const ExpressionBinary& expression) const override;
     [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionGrouping(

@@ -27,6 +27,7 @@ private:
 
     std::unique_ptr<Expression> expression();
 
+    std::unique_ptr<Expression> assignment();
     std::unique_ptr<Expression> equality();
     std::unique_ptr<Expression> comparison();
     std::unique_ptr<Expression> addition();

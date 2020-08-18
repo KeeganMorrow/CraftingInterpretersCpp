@@ -63,11 +63,28 @@ std::unique_ptr<Statement> Parser::declaration()
     }
 }
 
+std::unique_ptr<std::vector<std::unique_ptr<Statement>>> Parser::block()
+{
+    auto statements = std::make_unique<std::vector<std::unique_ptr<Statement>>>();
+
+    while (!check(TokenType::RIGHT_BRACE) && !isAtEnd())
+    {
+        statements->emplace_back(declaration());
+    }
+
+    consume(TokenType::RIGHT_BRACE, "Expect '}' after block.");
+    return statements;
+}
+
 std::unique_ptr<Statement> Parser::statement()
 {
     if (match({TokenType::PRINT}))
     {
         return printStatement();
+    }
+    if (match({TokenType::LEFT_BRACE}))
+    {
+        return std::make_unique<StatementBlock>(block());
     }
 
     return expressionStatement();

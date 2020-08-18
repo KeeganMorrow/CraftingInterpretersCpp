@@ -68,8 +68,9 @@ class StdoutWriter(Writer):
 
 class ValType(enum.Enum):
     VALUE = 1
-    UNIQUE_PTR = 2
-    REFERENCE = 3
+    REFERENCE = 2
+    AST_NODE = 3
+    STATEMENT_VEC = 3
 
 
 class MemberVariable:
@@ -108,18 +109,19 @@ class AstBase:
         self.inherited = []
         self.visitors = []
 
-    def addInherited(self, name, members):
-        self.inherited.append(AstInherited(self, name, members))
+    def addInherited(self, name, members, copyable=True):
+        self.inherited.append(AstInherited(self, name, members, copyable))
 
     def addVisitor(self, name, ret):
         self.visitors.append(AstVisitor(self, name, ret))
 
 
 class AstInherited:
-    def __init__(self, base, name, members):
+    def __init__(self, base, name, members, copyable):
         self.base = base
         self.name = name
         self.members = members
+        self.copyable = copyable
 
     @property
     def classname(self):
@@ -142,9 +144,9 @@ def declare_visitors(w, base):
         w.increase()
         for inh in base.inherited:
             w.write(
-                f"virtual {v.ret} visit{inh.classname}({inh.classname}&) = 0;".
-                format())
-        w.decrease()
+                    f"virtual {v.ret} visit{inh.classname}({inh.classname}&) = 0;".
+                    format())
+            w.decrease()
         w.write("};")
 
 
@@ -156,8 +158,10 @@ def declare_inherited(w, base):
                 args = args + f"{m.type} {m.localname}"
             elif m.val_type == ValType.REFERENCE:
                 args = args + f"{m.type} &{m.localname}"
-            elif m.val_type == ValType.UNIQUE_PTR:
+            elif m.val_type == ValType.AST_NODE:
                 args = args + f"std::unique_ptr<{m.type}> &&{m.localname}"
+            elif m.val_type == ValType.STATEMENT_VEC:
+                args = args + f"{m.type} &&{m.localname}"
             if not m is inh.members[-1]:
                 args = args + ', '
         # Don't use these constructors for implicit conversions
@@ -174,12 +178,15 @@ def declare_inherited(w, base):
                 lineend = '{}'
             if m.val_type == ValType.REFERENCE:
                 w.write(f"{m.membername}({m.localname})".format() + lineend)
-            elif m.val_type == ValType.UNIQUE_PTR or m.val_type == ValType.VALUE:
+            elif m.val_type == ValType.AST_NODE or m.val_type == ValType.VALUE or m.val_type == ValType.STATEMENT_VEC:
                 w.write(f"{m.membername}(std::move({m.localname}))".format() +
                         lineend)
-        w.decrease()
+                w.decrease()
 
     def define_copy_constructor():
+        if not inh.copyable:
+            w.write(f"{inh.classname}(const {inh.classname}& other) = delete;".format())
+            return
         w.write(f"{inh.classname}(const {inh.classname}& other)".format() +
                 ":")
         w.increase()
@@ -192,7 +199,7 @@ def declare_inherited(w, base):
             if m.val_type == ValType.VALUE or m.val_type == ValType.REFERENCE:
                 w.write(f"{m.membername}(other.{m.membername})".format() +
                         lineend)
-            elif m.val_type == ValType.UNIQUE_PTR:
+            elif m.val_type == ValType.AST_NODE:
                 w.write(
                     f"{m.membername}(other.{m.membername}->clone())".format() +
                     lineend)
@@ -204,11 +211,17 @@ def declare_inherited(w, base):
             f"std::unique_ptr<{base.classname}> clone() override".format() +
             "{")
         w.increase()
+        # TODO: Temporary hack - Should probably actually implement this
+        if not inh.copyable:
+            w.write("return nullptr;");
+            w.decrease()
+            w.write("}")
+            return
         args = ""
         for m in inh.members:
             if m.val_type == ValType.REFERENCE or m.val_type == ValType.VALUE:
                 args = args + f"{m.membername}"
-            if m.val_type == ValType.UNIQUE_PTR:
+            if m.val_type == ValType.AST_NODE:
                 args = args + f"std::move({m.membername})"
             if not m is inh.members[-1]:
                 args = args + ', '
@@ -236,7 +249,7 @@ def declare_inherited(w, base):
             elif (m.val_type == ValType.VALUE):
                 rtype = m.type
                 rexpr = m.membername
-            elif (m.val_type == ValType.UNIQUE_PTR):
+            elif (m.val_type == ValType.AST_NODE):
                 rtype = f"{m.type}*".format()
                 rexpr = f"{m.membername}.get()".format()
             w.write(f"{rtype} {m.gettername}()".format() + "{")
@@ -250,7 +263,7 @@ def declare_inherited(w, base):
             if (mem.val_type == ValType.REFERENCE
                     or mem.val_type == ValType.VALUE):
                 w.write(f"{mem.type} {mem.membername};".format())
-            elif (mem.val_type == ValType.UNIQUE_PTR):
+            elif (mem.val_type == ValType.AST_NODE):
                 w.write(
                     f"std::unique_ptr<{mem.type}> {mem.membername};".format())
 
@@ -330,21 +343,21 @@ def main():
     expression_base.addVisitor("String", "std::string")
     expression_base.addInherited('Assign', [
         MemberVariable('Name', 'Token', ValType.VALUE),
-        MemberVariable('Value', 'Expression', ValType.UNIQUE_PTR)
+        MemberVariable('Value', 'Expression', ValType.AST_NODE)
     ])
     expression_base.addInherited('Binary', [
-        MemberVariable('Left', 'Expression', ValType.UNIQUE_PTR),
+        MemberVariable('Left', 'Expression', ValType.AST_NODE),
         MemberVariable('Token', 'Token', ValType.VALUE),
-        MemberVariable('Right', 'Expression', ValType.UNIQUE_PTR)
+        MemberVariable('Right', 'Expression', ValType.AST_NODE)
     ])
     expression_base.addInherited(
         'Grouping',
-        [MemberVariable('Expression', 'Expression', ValType.UNIQUE_PTR)])
+        [MemberVariable('Expression', 'Expression', ValType.AST_NODE)])
     expression_base.addInherited(
         'Literal', [MemberVariable('Value', 'LiteralVal', ValType.VALUE)])
     expression_base.addInherited('Unary', [
         MemberVariable('Token', 'Token', ValType.VALUE),
-        MemberVariable('Expression', 'Expression', ValType.UNIQUE_PTR)
+        MemberVariable('Expression', 'Expression', ValType.AST_NODE)
     ])
     expression_base.addInherited(
         'Variable', [MemberVariable('Name', 'Token', ValType.VALUE)])
@@ -371,15 +384,20 @@ def main():
     statement_base = AstBase('Statement')
     statement_base.addVisitor("Void", "void")
     statement_base.addVisitor("String", "std::string")
+    statement_base.addInherited('Block', [
+        MemberVariable('Statements', 'std::vector<std::unique_ptr<Statement>>',
+                       ValType.STATEMENT_VEC)
+    ],
+                                copyable=False)
     statement_base.addInherited(
         'Expression',
-        [MemberVariable('Expression', 'Expression', ValType.UNIQUE_PTR)])
+        [MemberVariable('Expression', 'Expression', ValType.AST_NODE)])
     statement_base.addInherited(
         'Print',
-        [MemberVariable('Expression', 'Expression', ValType.UNIQUE_PTR)])
+        [MemberVariable('Expression', 'Expression', ValType.AST_NODE)])
     statement_base.addInherited('Variable', [
         MemberVariable('Name', 'Token', ValType.VALUE),
-        MemberVariable('Initializer', 'Expression', ValType.UNIQUE_PTR),
+        MemberVariable('Initializer', 'Expression', ValType.AST_NODE),
     ])
 
     with FileWriter(os.path.join(args.output_directory,

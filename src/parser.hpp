@@ -18,6 +18,7 @@ public:
 private:
     void synchronize();
 
+    std::unique_ptr<std::vector<std::unique_ptr<Statement>>> block();
     std::unique_ptr<Statement> declaration();
 
     std::unique_ptr<Statement> statement();

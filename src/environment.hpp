@@ -11,7 +11,7 @@ namespace lox
 class Environment
 {
 public:
-    Environment() = default;
+    explicit Environment(Environment *enclosing = nullptr) : m_enclosing(enclosing) {}
     void define(std::string name, std::unique_ptr<LiteralVal> value);
     void assign(const Token &token, std::unique_ptr<LiteralVal> value);
 
@@ -19,6 +19,7 @@ public:
 
 private:
     std::map<std::string, std::unique_ptr<LiteralVal>> m_values;
+    Environment *m_enclosing;
 };
 
 }  // namespace lox

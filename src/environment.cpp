@@ -24,7 +24,14 @@ void Environment::assign(const Token &token, std::unique_ptr<LiteralVal> value)
     }
     catch (std::out_of_range &e)
     {
-        throw RuntimeError(token, "Undefined variable " + token.lexeme() + ".");
+        if (m_enclosing != nullptr)
+        {
+            m_enclosing->assign(token, std::move(value));
+        }
+        else
+        {
+            throw RuntimeError(token, "Undefined variable " + token.lexeme() + ".");
+        }
     }
 }
 
@@ -38,6 +45,10 @@ LiteralVal Environment::get(const Token &token) const
     }
     catch (std::out_of_range &e)
     {
+        if (m_enclosing != nullptr)
+        {
+            return m_enclosing->get(token);
+        }
         throw RuntimeError(token, "Undefined variable " + token.lexeme() + ".");
     }
 }

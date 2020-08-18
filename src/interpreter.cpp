@@ -32,6 +32,39 @@ void Interpreter::interpret(std::vector<std::unique_ptr<Statement>>&& program)
                       error.token().lexeme());
     }
 }
+
+void Interpreter::executeBlock(std::vector<std::unique_ptr<Statement>>& statements,
+                               Environment& environment)
+{
+    auto* previous_env = m_environment;
+    try
+    {
+        m_environment = &environment;
+
+        for (auto& statement : statements)
+        {
+            execute(std::move(statement));
+        }
+
+        m_environment = previous_env;
+    }
+    catch (RuntimeError& error)
+    {
+        // Even if exception occurs we need to restore the old env
+        m_environment = previous_env;
+    }
+}
+
+void Interpreter::visitStatementBlock(StatementBlock& statement)
+{
+    auto* statements = statement.getStatements();
+    if (statements != nullptr)
+    {
+        Environment env(m_environment);
+        executeBlock(*statements, env);
+    }
+}
+
 void Interpreter::visitStatementExpression(StatementExpression& statement)
 {
     (void)evaluate(statement.getExpression());

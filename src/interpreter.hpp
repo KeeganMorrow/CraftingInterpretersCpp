@@ -10,8 +10,8 @@ namespace lox
 class RuntimeError : public BaseException
 {
 public:
-    RuntimeError(const Token& token, std::string error_msg)
-        : BaseException(std::move(error_msg)), m_token(token)
+    RuntimeError(Token token, std::string error_msg)
+        : BaseException(std::move(error_msg)), m_token(std::move(token))
     {
     }
 
@@ -19,20 +19,29 @@ public:
 
 private:
     const std::string m_error_msg;
-    const Token& m_token;
+    const Token m_token;
 };
 
 // TODO: Use string for now, need some kind of lox data object type
 class Interpreter : public ExpressionVisitorLiteralVal, public StatementVisitorVoid
 {
 public:
-    Interpreter() : m_environment(std::make_unique<Environment>()) {}
+    Interpreter()
+        : m_global_environment(std::make_unique<Environment>()),
+          m_environment(m_global_environment.get())
+    {
+    }
     [[nodiscard]] std::unique_ptr<LiteralVal> evaluate(Expression* expression);
 
     void interpret(std::vector<std::unique_ptr<Statement>>&& program);
 
 private:
+    // TODO Why do we need to transfer ownership of the environment? Fix this
     void execute(std::unique_ptr<Statement>&& statement) { statement->accept(*this); }
+    void executeBlock(std::vector<std::unique_ptr<Statement>>& statements,
+                      Environment& environment);
+
+    void visitStatementBlock(StatementBlock& statement) override;
     void visitStatementExpression(StatementExpression& statement) override;
     void visitStatementPrint(StatementPrint& statement) override;
     void visitStatementVariable(StatementVariable& statement) override;
@@ -56,7 +65,8 @@ private:
     static void checkNumberOperands(const Token& token, const LiteralVal& left,
                                     const LiteralVal& right);
 
-    std::unique_ptr<Environment> m_environment;
+    std::unique_ptr<Environment> m_global_environment;
+    Environment* m_environment;
 };
 
 }  // namespace lox

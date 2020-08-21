@@ -31,6 +31,8 @@ private:
 
     std::unique_ptr<Expression> assignment();
     std::unique_ptr<Expression> equality();
+    std::unique_ptr<Expression> logicalOr();
+    std::unique_ptr<Expression> logicalAnd();
     std::unique_ptr<Expression> comparison();
     std::unique_ptr<Expression> addition();
     std::unique_ptr<Expression> multiplication();

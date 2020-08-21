@@ -203,9 +203,34 @@ std::unique_ptr<LiteralVal> Interpreter::visitExpressionBinary(ExpressionBinary&
     case TokenType::EQUAL_EQUAL:
         return std::make_unique<LiteralVal>(*left != *right);
     default:
+        spdlog::error("Unrecognized binary operator {}", expression.getToken().repr());
         break;
     }
     return nullptr;
+}
+
+std::unique_ptr<LiteralVal> Interpreter::visitExpressionLogical(ExpressionLogical& expression)
+{
+    auto left = evaluate(expression.getLeft());
+    switch (expression.getToken().type())
+    {
+    case TokenType::OR:
+        if (isTruthy(*left))
+        {
+            return left;
+        }
+        break;
+    case TokenType::AND:
+        if (!isTruthy(*left))
+        {
+            return left;
+        }
+        break;
+    default:
+        spdlog::error("Unrecognized binary operator {}", expression.getToken().repr());
+        break;
+    }
+    return evaluate(expression.getRight());
 }
 
 std::unique_ptr<LiteralVal> Interpreter::visitExpressionGrouping(ExpressionGrouping& expression)

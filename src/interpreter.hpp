@@ -51,6 +51,8 @@ private:
         ExpressionAssign& expression) override;
     [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionBinary(
         ExpressionBinary& expression) override;
+    [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionLogical(
+        ExpressionLogical& expression) override;
     [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionGrouping(
         ExpressionGrouping& expression) override;
     [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionLiteral(

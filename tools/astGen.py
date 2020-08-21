@@ -355,6 +355,11 @@ def main():
         [MemberVariable('Expression', 'Expression', ValType.AST_NODE)])
     expression_base.addInherited(
         'Literal', [MemberVariable('Value', 'LiteralVal', ValType.VALUE)])
+    expression_base.addInherited('Logical', [
+        MemberVariable('Left', 'Expression', ValType.AST_NODE),
+        MemberVariable('Token', 'Token', ValType.VALUE),
+        MemberVariable('Right', 'Expression', ValType.AST_NODE)
+    ])
     expression_base.addInherited('Unary', [
         MemberVariable('Token', 'Token', ValType.VALUE),
         MemberVariable('Expression', 'Expression', ValType.AST_NODE)

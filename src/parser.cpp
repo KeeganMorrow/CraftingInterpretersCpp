@@ -140,7 +140,7 @@ std::unique_ptr<Expression> Parser::expression() { return assignment(); }
 
 std::unique_ptr<Expression> Parser::assignment()
 {
-    auto expr = equality();
+    auto expr = logicalOr();
 
     if (match({TokenType::EQUAL}))
     {
@@ -155,6 +155,31 @@ std::unique_ptr<Expression> Parser::assignment()
         }
 
         throw error(equals, "Invalid assignment target");
+    }
+    return expr;
+}
+
+std::unique_ptr<Expression> Parser::logicalOr()
+{
+    auto expr = logicalAnd();
+
+    if (match({TokenType::OR}))
+    {
+        auto token = previous();
+        auto right = logicalAnd();
+        expr = std::make_unique<ExpressionLogical>(std::move(expr), token, std::move(right));
+    }
+    return expr;
+}
+
+std::unique_ptr<Expression> Parser::logicalAnd()
+{
+    auto expr = equality();
+    if (match({TokenType::AND}))
+    {
+        auto token = previous();
+        auto right = equality();
+        expr = std::make_unique<ExpressionLogical>(std::move(expr), token, std::move(right));
     }
     return expr;
 }

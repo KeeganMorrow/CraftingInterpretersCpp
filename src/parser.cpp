@@ -103,7 +103,7 @@ std::unique_ptr<Statement> Parser::ifStatement()
     std::unique_ptr<Statement> else_branch;
     if (match({TokenType::ELSE}))
     {
-        else_branch = std::move(statement());
+        else_branch = statement();
     }
     return std::make_unique<StatementIf>(std::move(condition), std::move(then_branch),
                                          std::move(else_branch));

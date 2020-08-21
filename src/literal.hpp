@@ -52,7 +52,7 @@ public:
 
     [[nodiscard]] std::string repr() const;
     template <typename T>
-    friend T getLiteral(LiteralVal &val);
+    friend T getLiteral(const LiteralVal &val);
 
 protected:
     // NOLINTNEXTLINE
@@ -60,7 +60,7 @@ protected:
 };
 
 template <typename T>
-T getLiteral(LiteralVal &val)
+T getLiteral(const LiteralVal &val)
 {
     return std::get<T>(val.m_value);
 }

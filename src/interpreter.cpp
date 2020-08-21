@@ -22,7 +22,14 @@ void Interpreter::interpret(std::vector<std::unique_ptr<Statement>>&& program)
     {
         for (auto& statement : program)
         {
-            execute(std::move(statement));
+            if (statement != nullptr)
+            {
+                execute(*statement);
+            }
+            else
+            {
+                spdlog::error("Null statement found in program");
+            }
         }
     }
     catch (RuntimeError& error)
@@ -43,7 +50,14 @@ void Interpreter::executeBlock(std::vector<std::unique_ptr<Statement>>& statemen
 
         for (auto& statement : statements)
         {
-            execute(std::move(statement));
+            if (statement != nullptr)
+            {
+                execute(*statement);
+            }
+            else
+            {
+                spdlog::error("Null statement found in block");
+            }
         }
 
         m_environment = previous_env;
@@ -68,6 +82,27 @@ void Interpreter::visitStatementBlock(StatementBlock& statement)
 void Interpreter::visitStatementExpression(StatementExpression& statement)
 {
     (void)evaluate(statement.getExpression());
+}
+
+void Interpreter::visitStatementIf(StatementIf& statement)
+{
+    auto result = evaluate(statement.getCondition());
+    if (result != nullptr && isTruthy(*result))
+    {
+        auto* thenbranch = statement.getthenBranch();
+        if (thenbranch != nullptr)
+        {
+            execute(*thenbranch);
+        }
+        else
+        {
+            spdlog::error("If statement found with null then branch");
+        }
+    }
+    else if (statement.getelseBranch() != nullptr)
+    {
+        execute(*statement.getelseBranch());
+    }
 }
 
 void Interpreter::visitStatementPrint(StatementPrint& statement)
@@ -194,7 +229,7 @@ std::unique_ptr<LiteralVal> Interpreter::visitExpressionUnary(ExpressionUnary& e
         checkNumberOperand(expression.getToken(), *right);
         return std::make_unique<LiteralVal>(-(getLiteral<double>(*right)));
     case TokenType::BANG:
-        return isTruthy(*right);
+        return std::make_unique<LiteralVal>(isTruthy(*right));
     default:
         break;
     }
@@ -209,14 +244,18 @@ std::unique_ptr<LiteralVal> Interpreter::visitExpressionVariable(ExpressionVaria
     auto val = m_environment->get(varname);
     return std::make_unique<LiteralVal>(val);
 }
-std::unique_ptr<LiteralVal> Interpreter::isTruthy(const LiteralVal& lval)
+bool Interpreter::isTruthy(const LiteralVal& lval)
 {
     bool result = true;
     if (lval.type() == LiteralValType::Nil)
     {
         result = false;
     }
-    return std::make_unique<LiteralVal>(result);
+    if (lval.type() == LiteralValType::Bool)
+    {
+        result = getLiteral<bool>(lval);
+    }
+    return result;
 }
 
 void Interpreter::checkNumberOperand(const Token& token, const LiteralVal& operand)

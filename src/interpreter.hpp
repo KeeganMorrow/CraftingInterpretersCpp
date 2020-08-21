@@ -37,12 +37,13 @@ public:
 
 private:
     // TODO Why do we need to transfer ownership of the environment? Fix this
-    void execute(std::unique_ptr<Statement>&& statement) { statement->accept(*this); }
+    void execute(Statement& statement) { statement.accept(*this); }
     void executeBlock(std::vector<std::unique_ptr<Statement>>& statements,
                       Environment& environment);
 
     void visitStatementBlock(StatementBlock& statement) override;
     void visitStatementExpression(StatementExpression& statement) override;
+    void visitStatementIf(StatementIf& statement) override;
     void visitStatementPrint(StatementPrint& statement) override;
     void visitStatementVariable(StatementVariable& statement) override;
 
@@ -59,7 +60,7 @@ private:
     [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionVariable(
         ExpressionVariable& expression) override;
 
-    [[nodiscard]] static std::unique_ptr<LiteralVal> isTruthy(const LiteralVal& lval);
+    [[nodiscard]] static bool isTruthy(const LiteralVal& lval);
 
     static void checkNumberOperand(const Token& token, const LiteralVal& operand);
     static void checkNumberOperands(const Token& token, const LiteralVal& left,

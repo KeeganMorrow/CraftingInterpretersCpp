@@ -392,6 +392,11 @@ def main():
     statement_base.addInherited(
         'Expression',
         [MemberVariable('Expression', 'Expression', ValType.AST_NODE)])
+    statement_base.addInherited('If', [
+        MemberVariable('Condition', 'Expression', ValType.AST_NODE),
+        MemberVariable('thenBranch', 'Statement', ValType.AST_NODE),
+        MemberVariable('elseBranch', 'Statement', ValType.AST_NODE),
+    ])
     statement_base.addInherited(
         'Print',
         [MemberVariable('Expression', 'Expression', ValType.AST_NODE)])

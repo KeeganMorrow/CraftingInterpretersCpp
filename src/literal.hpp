@@ -40,7 +40,7 @@ public:
     explicit LiteralVal(std::string value) : m_value(value) {}
     explicit LiteralVal(double value) : m_value(value) {}
     explicit LiteralVal(bool value) : m_value(value) {}
-    LiteralVal() = default;
+    LiteralVal() : m_value(NilLiteral()) {}
     LiteralVal(const LiteralVal &other) = default;
     LiteralVal(LiteralVal &&other) = default;
 

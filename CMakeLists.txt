@@ -15,10 +15,10 @@ ccache_setup()
 
 option(ENABLE_COLOR "Enable colors in the output of all possible tools" ON)
 
-if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL
-                                              "Clang"
+if(
+    ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU"
+    OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang"
 )
-
     set(LOX_CXX_FLAGS_WARNING
         "-Wall;-Wextra;-Werror;-Wno-unused-private-field;-pedantic"
     )
@@ -33,9 +33,7 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL
         if(${ENABLE_COLOR})
             list(APPEND LOX_CXX_FLAGS_OTHERS "-fdiagnostics-color")
         endif()
-
     endif()
-
 else()
     message(WARNING "Unsupported compiler detected! ${CMAKE_CXX_COMPILER_ID}")
 endif()
@@ -46,7 +44,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(AST_HEADERS
     "${CMAKE_BINARY_DIR}/include/expression_ast.hpp"
     "${CMAKE_BINARY_DIR}/include/statement_ast.hpp"
-    )
+)
 
 add_custom_target(
     gen_ast
@@ -76,8 +74,10 @@ target_link_libraries(main spdlog::spdlog ast)
 target_compile_features(main PRIVATE cxx_std_17)
 target_compile_options(
     main
-    PRIVATE ${LOX_CXX_FLAGS_WARNING} ${LOX_CXX_FLAGS_OPTIMIZATION}
-            ${LOX_CXX_FLAGS_OTHERS}
+    PRIVATE
+        ${LOX_CXX_FLAGS_WARNING}
+        ${LOX_CXX_FLAGS_OPTIMIZATION}
+        ${LOX_CXX_FLAGS_OTHERS}
 )
 target_include_directories(main PRIVATE "${CMAKE_SOURCE_DIR}/src")
 clangtidy_addtarget(main)

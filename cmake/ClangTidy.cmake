@@ -3,7 +3,11 @@ function(clangtidy_addtarget target)
     set(oneValueArgs "")
     set(multiValueArgs "")
     cmake_parse_arguments(
-        ADDTARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN}
+        ADDTARGET
+        "${options}"
+        "${oneValueArgs}"
+        "${multiValueArgs}"
+        ${ARGN}
     )
     get_target_property(TARGET_SOURCES ${target} SOURCES)
     get_target_property(TARGET_SOURCEDIR ${target} SOURCE_DIR)
@@ -14,7 +18,11 @@ function(clangtidy_addtarget target)
 
     find_program(RUN_CLANG_TIDY_BIN run-clang-tidy.py /usr/share/clang)
     find_program(
-        CLANGTIDY_BIN clang-tidy clangtidy-11 clangtidy-10 clangtidy-9
+        CLANGTIDY_BIN
+        clang-tidy
+        clangtidy-11
+        clangtidy-10
+        clangtidy-9
         clangtidy-8
     )
 
@@ -48,5 +56,4 @@ function(clangtidy_addtarget target)
     else()
         add_dependencies(clangtidy DEPENDS clangtidy_${target})
     endif()
-
 endfunction()

@@ -111,6 +111,22 @@ void Interpreter::visitStatementPrint(StatementPrint& statement)
     spdlog::info(value->repr());
 }
 
+void Interpreter::visitStatementWhile(StatementWhile& statement)
+{
+    while (isTruthy(*evaluate(statement.getCondition())))
+    {
+        auto* body = statement.getBody();
+        if (body != nullptr)
+        {
+            execute(*body);
+        }
+        else
+        {
+            spdlog::error("Null body in while statement");
+        }
+    }
+}
+
 void Interpreter::visitStatementVariable(StatementVariable& statement)
 {
     std::unique_ptr<LiteralVal> value;

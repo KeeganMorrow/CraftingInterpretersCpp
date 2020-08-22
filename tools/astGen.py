@@ -409,6 +409,10 @@ def main():
         MemberVariable('Name', 'Token', ValType.VALUE),
         MemberVariable('Initializer', 'Expression', ValType.AST_NODE),
     ])
+    statement_base.addInherited('While', [
+        MemberVariable('Condition', 'Expression', ValType.AST_NODE),
+        MemberVariable('Body', 'Statement', ValType.AST_NODE)
+    ])
 
     with FileWriter(os.path.join(args.output_directory,
                                  "statement_ast.hpp")) as w:

@@ -1,6 +1,8 @@
 #include "parser.hpp"
 
 #include <spdlog/spdlog.h>
+
+#include "literal.hpp"
 namespace lox
 {
 std::vector<std::unique_ptr<Statement>> Parser::parse()
@@ -86,6 +88,14 @@ std::unique_ptr<Statement> Parser::statement()
     {
         return printStatement();
     }
+    if (match({TokenType::WHILE}))
+    {
+        return whileStatement();
+    }
+    if (match({TokenType::FOR}))
+    {
+        return forStatement();
+    }
     if (match({TokenType::LEFT_BRACE}))
     {
         return std::make_unique<StatementBlock>(block());
@@ -114,6 +124,73 @@ std::unique_ptr<Statement> Parser::printStatement()
     auto expr = expression();
     consume(TokenType::SEMICOLON, "Expect ';' after value.");
     return std::make_unique<StatementPrint>(std::move(expr));
+}
+
+std::unique_ptr<Statement> Parser::whileStatement()
+{
+    consume(TokenType::LEFT_PAREN, "Expect '(' after while.");
+    auto expr = expression();
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after while.");
+    auto body = statement();
+    return std::make_unique<StatementWhile>(std::move(expr), std::move(body));
+}
+
+std::unique_ptr<Statement> Parser::forStatement()
+{
+    consume(TokenType::LEFT_PAREN, "Expect '(' after for.");
+    std::unique_ptr<Statement> initializer;
+    if (match({TokenType::SEMICOLON}))
+    {
+        initializer = nullptr;
+    }
+    else if (match({TokenType::VAR}))
+    {
+        initializer = varDeclaration();
+    }
+    else
+    {
+        initializer = expressionStatement();
+    }
+
+    std::unique_ptr<Expression> condition;
+    if (!check(TokenType::SEMICOLON))
+    {
+        condition = expression();
+    }
+    consume(TokenType::SEMICOLON, "Expect ';' after loop condition.");
+
+    std::unique_ptr<Expression> increment;
+    if (!check(TokenType::RIGHT_PAREN))
+    {
+        increment = expression();
+    }
+    consume(TokenType::RIGHT_PAREN, "Expect ')' after for loop clauses.");
+
+    auto body = statement();
+    if (increment != nullptr)
+    {
+        // Statement block is the for loop body followed by the increment
+        auto statements = std::make_unique<std::vector<std::unique_ptr<Statement>>>();
+        statements->emplace_back(std::move(body));
+        statements->emplace_back(std::make_unique<StatementExpression>(std::move(increment)));
+        body = std::make_unique<StatementBlock>(std::move(statements));
+    }
+
+    if (condition == nullptr)
+    {
+        condition = std::make_unique<ExpressionLiteral>(LiteralVal(true));
+    }
+
+    body = std::make_unique<StatementWhile>(std::move(condition), std::move(body));
+
+    if (initializer != nullptr)
+    {
+        auto statements = std::make_unique<std::vector<std::unique_ptr<Statement>>>();
+        statements->emplace_back(std::move(initializer));
+        statements->emplace_back(std::move(body));
+        body = std::make_unique<StatementBlock>(std::move(statements));
+    }
+    return body;
 }
 
 std::unique_ptr<Statement> Parser::expressionStatement()

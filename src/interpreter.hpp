@@ -45,6 +45,7 @@ private:
     void visitStatementExpression(StatementExpression& statement) override;
     void visitStatementIf(StatementIf& statement) override;
     void visitStatementPrint(StatementPrint& statement) override;
+    void visitStatementWhile(StatementWhile& statement) override;
     void visitStatementVariable(StatementVariable& statement) override;
 
     [[nodiscard]] std::unique_ptr<LiteralVal> visitExpressionAssign(

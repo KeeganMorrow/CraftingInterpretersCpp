@@ -190,6 +190,9 @@ def declare_inherited(w, base):
         w.write(f"{inh.classname}(const {inh.classname}& other)".format() +
                 ":")
         w.increase()
+
+        w.write(f" {base.classname}(),")
+
         for m in inh.members:
             if not m is inh.members[-1]:
                 lineend = ','
@@ -208,7 +211,7 @@ def declare_inherited(w, base):
     def define_clone():
         w.write("// Method for allowing polymorphic copy")
         w.write(
-            f"std::unique_ptr<{base.classname}> clone() override".format() +
+            f"std::unique_ptr<{base.classname}> clone() const override".format() +
             "{")
         w.increase()
         # TODO: Temporary hack - Should probably actually implement this
@@ -218,11 +221,18 @@ def declare_inherited(w, base):
             w.write("}")
             return
         args = ""
+        w.increase()
         for m in inh.members:
             if m.val_type == ValType.REFERENCE or m.val_type == ValType.VALUE:
                 args = args + f"{m.membername}"
             if m.val_type == ValType.AST_NODE:
-                args = args + f"std::move({m.membername})"
+                w.write(f"std::unique_ptr<{m.type}> new{m.membername};".format())
+                w.write(f"if ({m.membername}) ".format() + "{")
+                w.increase()
+                w.write(f"new{m.membername} = {m.membername}->clone();".format())
+                w.decrease()
+                w.write("}")
+                args = args + f"std::move(new{m.membername})"
             if not m is inh.members[-1]:
                 args = args + ', '
         w.write(f"return std::make_unique<{inh.classname}>({args});")
@@ -306,7 +316,7 @@ def declare_baseclass(w, base):
     w.write(f"{base.classname}(const {base.classname}&) = delete;".format())
     w.write(f"virtual ~{base.classname}() = default;".format())
     w.write()
-    w.write(f"virtual std::unique_ptr<{base.classname}> clone() = 0;".format())
+    w.write(f"virtual std::unique_ptr<{base.classname}> clone() const= 0;".format())
     w.write()
     for v in base.visitors:
         w.write(f"virtual {v.ret} accept({v.classname}&) = 0;".format())
